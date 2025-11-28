@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - ParkQueue</title>
+  <link rel="stylesheet" href="admin-login.css">
+</head>
+<body>
+  <main class="login-shell">
+    <section class="login-card">
+      <h1>Admin Login</h1>
+      
+      <form id="adminLoginForm">
+        <div>
+          <label for="adminEmail">Email</label>
+          <input id="adminEmail" type="email" placeholder="Enter admin email" required />
+        </div>
+        
+        <div>
+          <label for="adminPassword">Password</label>
+          <input id="adminPassword" type="password" placeholder="Enter password" required />
+        </div>
+        
+        <button type="submit">Sign In</button>
+      </form>
+      
+      <p id="adminStatus" class="status"></p>
+    </section>
+  </main>
+
+  <!-- Remove type="module" if you're serving locally without a server -->
+  <script type="module" src="admin-login.js"></script>
+</body>
+</html>
