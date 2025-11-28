@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pending Account Approvals - ParkQueue</title>
+  <link rel="stylesheet" href="approvals.css" />
+  <link rel="icon" type="image/jpg" href="../dashboard/pics/icon.jpg">
+</head>
+<body>
+  <!-- Navigation Sidebar -->
+  <nav class="sidebar" aria-label="Main navigation">
+    <div class="admin-info">
+      <div class="admin-avatar">
+        <span id="adminInitials">A</span>
+      </div>
+      <div class="admin-details">
+        <span id="adminName" class="admin-name">Admin</span>
+        <span id="adminEmail" class="admin-email">admin@parkqueue.com</span>
+      </div>
+      <button id="logoutBtn" class="logout-btn">Logout</button>
+    </div>
+    <h1 class="sidebar__title">
+      <a href="../dashboard/dashboard.html">ParkQueue</a>
+    </h1>
+    <ul class="sidebar__menu">
+      <li class="sidebar__menu-item">
+        <a href="../dashboard/dashboard.html" class="sidebar__link">Account Statistics</a>
+      </li>
+      <li class="sidebar__menu-item">
+        <a href="../dashboard/account-management.html" class="sidebar__link">Account Management</a>
+      </li>
+      <li class="sidebar__menu-item">
+        <a href="approvals.html" class="sidebar__link sidebar__link--active">Pending Approvals</a>
+      </li>
+      <li class="sidebar__menu-item">
+        <a href="../dashboard/admin-camera.html" class="sidebar__link">Camera</a>
+      </li>
+      <li class="sidebar__menu-item">
+        <a href="../dashboard/qr-code-gen.html" class="sidebar__link">Code Generated</a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="page-header">
+      <h1 class="page-title">Pending Account Approvals</h1>
+      <div class="header-stats">
+        <span class="stat-badge" id="pendingCount">0 Pending</span>
+      </div>
+    </header>
+
+    <section class="approval-table-container">
+      <div id="loadingState" class="loading">
+        <div class="loading-spinner"></div>
+        <p>Loading pending requests...</p>
+      </div>
+      
+      <table class="approval-table" id="approvalTable" style="display: none;">
+        <thead>
+          <tr>
+            <th scope="col">No.</th>
+            <th scope="col">Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Registration Date</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="approvalTableBody"></tbody>
+      </table>
+      
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-icon">📋</div>
+        <h2>No Pending Approvals</h2>
+        <p>All student accounts have been reviewed.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Student Details Modal -->
+  <div id="detailsModal" class="modal">
+    <div class="modal__content modal__content--large">
+      <button class="modal__close" id="closeDetailsBtn">&times;</button>
+      <h2 class="modal__title">Student Details</h2>
+      
+      <div class="details-container" id="studentDetailsContent">
+        <!-- Personal Information -->
+        <section class="details-section">
+          <h3>Personal Information</h3>
+          <div class="details-grid">
+            <div class="detail-item">
+              <label>Full Name</label>
+              <p id="detailFullName">-</p>
+            </div>
+            <div class="detail-item">
+              <label>Email</label>
+              <p id="detailEmail">-</p>
+            </div>
+            <div class="detail-item">
+              <label>Contact Number</label>
+              <p id="detailContact">-</p>
+            </div>
+            <div class="detail-item">
+              <label>Date of Birth</label>
+              <p id="detailDOB">-</p>
+            </div>
+            <div class="detail-item full-width">
+              <label>Address</label>
+              <p id="detailAddress">-</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Motor Information -->
+        <section class="details-section">
+          <h3>Vehicle Information</h3>
+          <div class="details-grid">
+            <div class="detail-item">
+              <label>Brand</label>
+              <p id="detailBrand">-</p>
+            </div>
+            <div class="detail-item">
+              <label>Model</label>
+              <p id="detailModel">-</p>
+            </div>
+            <div class="detail-item">
+              <label>Plate Number</label>
+              <p id="detailPlate">-</p>
+            </div>
+            <div class="detail-item">
+              <label>Registration Date</label>
+              <p id="detailVehicleReg">-</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Documents -->
+        <section class="details-section">
+          <h3>Uploaded Documents</h3>
+          <div id="documentsContainer" class="documents-list">
+            <!-- Documents will be loaded here -->
+          </div>
+        </section>
+      </div>
+
+      <div class="modal__actions">
+        <button id="detailsRejectBtn" class="modal__btn modal__btn--reject">Reject</button>
+        <button id="detailsApproveBtn" class="modal__btn modal__btn--approve">Approve</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="modal">
+    <div class="modal__content">
+      <div class="success-icon">✓</div>
+      <h2 class="modal__title">Account Approved Successfully!</h2>
+      <p class="modal__message">The student account has been approved and activated.</p>
+      <div class="modal__actions">
+        <button id="successOkBtn" class="modal__btn modal__btn--confirm">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject Modal -->
+  <div id="rejectModal" class="modal">
+    <div class="modal__content">
+      <div class="warning-icon">⚠</div>
+      <h2 class="modal__title">Reject Account Request</h2>
+      <p class="modal__message">Are you sure you want to reject this account?</p>
+      <textarea id="rejectReason" class="modal__input" placeholder="Reason for rejection (optional)..."></textarea>
+      <div class="modal__actions">
+        <button id="rejectCancelBtn" class="modal__btn modal__btn--cancel">Cancel</button>
+        <button id="rejectConfirmBtn" class="modal__btn modal__btn--reject">Confirm Reject</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../firebase.js"></script>
+  <script type="module" src="approvals.js"></script>
+</body>
+</html>
