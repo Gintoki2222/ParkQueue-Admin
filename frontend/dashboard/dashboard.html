@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - ParkQueue Analytics</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="icon" type="image/jpg" href="pics/icon.jpg">
+    <!-- Chart.js for real graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <!-- Navigation Sidebar -->
+    <nav class="sidebar" aria-label="Main navigation">
+        <div class="admin-info">
+            <div class="admin-avatar">
+                <span id="adminInitials">A</span>
+            </div>
+            <div class="admin-details">
+                <span id="adminName" class="admin-name">Loading...</span>
+                <span id="adminEmail" class="admin-email">admin@example.com</span>
+            </div>
+            <button id="logoutBtn" class="logout-btn">Logout</button>
+        </div>
+        <h1 class="sidebar__title">
+            <a href="admin-dashboard.html">ParkQueue</a>
+        </h1>
+        <ul class="sidebar__menu">
+            <li class="sidebar__menu-item">
+                <a href="admin-dashboard.html" class="sidebar__link">Account Statistics</a>
+            </li>
+            <li class="sidebar__menu-item">
+                <a href="account-management.html" class="sidebar__link">Account Management</a>
+            </li>
+            <li class="sidebar__menu-item">
+                <a href="admin-camera.html" class="sidebar__link">Camera</a>
+            </li>
+            <li class="sidebar__menu-item">
+                <a href="qr-code-gen.html" class="sidebar__link">Code Generated</a>
+            </li>
+        </ul>
+
+        <!-- Admin Profile Section -->
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard">
+        <!-- Dashboard Header -->
+        <header class="dashboard__header">
+            <section class="parking-status">
+                <h2 class="parking-status__title" id="capacity-time">
+                    Parking Analytics: <time datetime="2025-12-19">12/19/2025</time>
+                </h2>
+                <div class="parking-status__slots">
+                    <span class="slot slot--available" id="totalUsers">Loading Users...</span>
+                    <span class="slot slot--blank" id="pendingApprovals">Loading...</span>
+                </div>
+            </section>
+
+            <div class="dashboard__controls">
+                <div class="admin-welcome">
+                    Welcome back, <span id="welcomeAdminName">Admin</span>!
+                </div>
+                <div class="timeframe-selector">
+                    <button class="timeframe-selector__button" id="timeframeButton" aria-expanded="false"
+                        aria-haspopup="listbox">
+                        Week
+                    </button>
+                    <ul class="timeframe-selector__options" role="listbox">
+                        <li role="option" data-timeframe="day">Today</li>
+                        <li role="option" data-timeframe="week">Week</li>
+                        <li role="option" data-timeframe="month">Month</li>
+                        <li role="option" data-timeframe="year">Year</li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content Grid -->
+        <div class="dashboard__grid">
+            <!-- Parking Activity Section -->
+            <section class="dashboard-card dashboard-card--vehicle-report" aria-labelledby="vehicle-report-title">
+                <div class="chart-header">
+                    <h3 id="vehicle-report-title">Parking Activity This Week</h3>
+                    <div class="chart-stats">
+                        <span class="stat-item" id="weeklyActivity">0 entries</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Users by Course Section -->
+            <section class="dashboard-card dashboard-card--account-course" aria-labelledby="account-course-title">
+                <div class="chart-header">
+                    <h3 id="account-course-title">Users by Course</h3>
+                    <div class="chart-stats">
+                        <span class="stat-item" id="totalCourses">0 courses</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="courseChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Registration Trends Section -->
+            <section class="dashboard-card dashboard-card--account-weekly" aria-labelledby="account-weekly-title">
+                <div class="chart-header">
+                    <h3 id="account-weekly-title">Registration Trends</h3>
+                    <div class="chart-stats">
+                        <span class="stat-item" id="monthlyRegistrations">0 new users</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="registrationChart"></canvas>
+                </div>
+            </section>
+
+            <section class="dashboard-card dashboard-card--options">
+                <div class="pending-box">
+                    <div class="pending-icon">⏳</div>
+                    <h3>Pending Approvals</h3>
+                    <p class="pending-count" id="pendingCount">Loading...</p>
+                    <button class="pending-btn" id="viewPendingBtn">
+                        Review Applications
+                    </button>
+                </div>
+            </section>
+
+            <!-- Recent Activity Section -->
+            <section class="dashboard-card dashboard-card--history" aria-labelledby="account-history-title">
+                <header class="history-header">
+                    <h3 id="account-history-title">Recent Activity</h3>
+                    <div class="history-controls">
+                        <form role="search" class="search-form">
+                            <label for="history-search" class="visually-hidden">Search recent activity</label>
+                            <input type="search" id="history-search" placeholder="&#128269; Search..."
+                                class="search-form__input">
+                        </form>
+                        <button class="refresh-button" id="refreshActivity" aria-label="Refresh activity">
+                            🔄
+                        </button>
+                    </div>
+                </header>
+
+                <div class="table-container">
+                    <table class="history-table">
+                        <caption class="visually-hidden">Recent user activity records</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">User</th>
+                                <th scope="col">Activity</th>
+                                <th scope="col">Time</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activityTableBody">
+                            <!-- Dynamic content will be loaded here -->
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 20px;">
+                                    Loading recent activity...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Loading dashboard data...</p>
+    </div>
+
+    <script type="module" src="dashboard.js"></script>
+    <script type="module" src="dashboard-charts.js"></script>
+</body>
+
+</html>
