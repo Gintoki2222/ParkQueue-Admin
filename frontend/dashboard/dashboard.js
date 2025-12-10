@@ -1,6 +1,9 @@
-// admin/dashboard/dashboard.js
+// dashboard.js
 import { initializeCharts } from './dashboard-charts.js';
-import { auth, db } from "../firebase.js";
+import { 
+    auth, 
+    db 
+} from "../firebase.js";
 import { 
     onAuthStateChanged, 
     signOut 
@@ -10,9 +13,7 @@ import {
     query,
     where,
     getDocs,
-    onSnapshot,
-    doc,
-    getDoc
+    onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { AdminLogger } from "./admin-logger.js";
 
@@ -20,10 +21,20 @@ import { AdminLogger } from "./admin-logger.js";
 const adminNameElement = document.getElementById('adminName');
 const adminEmailElement = document.getElementById('adminEmail');
 const adminInitialsElement = document.getElementById('adminInitials');
+const adminNameNavElement = document.getElementById('adminNameNav');
+const adminInitialsNavElement = document.getElementById('adminInitialsNav');
 const welcomeAdminNameElement = document.getElementById('welcomeAdminName');
 const logoutBtn = document.getElementById('logoutBtn');
-const viewPendingBtn = document.getElementById('viewPendingBtn');
-const pendingCountElement = document.getElementById('pendingCount');
+const logoutBtnMobile = document.getElementById('logoutBtnMobile');
+const currentDateElement = document.getElementById('currentDate');
+
+// Navbar elements
+const menuToggle = document.getElementById('menuToggle');
+const closeMenu = document.getElementById('closeMenu');
+const mobileMenu = document.getElementById('mobileMenu');
+const mobileAdminNameElement = document.getElementById('mobileAdminName');
+const mobileAdminEmailElement = document.getElementById('mobileAdminEmail');
+const mobileAdminInitialsElement = document.getElementById('mobileAdminInitials');
 
 // Get admin data from Firestore
 async function getAdminData() {
@@ -55,31 +66,52 @@ async function getAdminData() {
 
 // Update UI with admin data
 function updateAdminUI(adminData) {
-    if (adminData) {
-        if (adminData.name) {
-            adminNameElement.textContent = adminData.name;
-            welcomeAdminNameElement.textContent = adminData.name;
-        } else {
-            const username = auth.currentUser.email.split('@')[0];
-            adminNameElement.textContent = username;
-            welcomeAdminNameElement.textContent = username;
-        }
-        
-        if (adminData.email) {
-            adminEmailElement.textContent = adminData.email;
-        }
-        
-        if (adminData.name) {
-            const initials = adminData.name.split(' ').map(n => n[0]).join('').toUpperCase();
-            adminInitialsElement.textContent = initials;
-        } else {
-            const emailInitial = auth.currentUser.email[0].toUpperCase();
-            adminInitialsElement.textContent = emailInitial;
-        }
+    const adminName = adminData?.name || auth.currentUser.email.split('@')[0];
+    const adminEmail = adminData?.email || auth.currentUser.email;
+    
+    // Update all admin name elements
+    [adminNameElement, adminNameNavElement, mobileAdminNameElement].forEach(element => {
+        if (element) element.textContent = adminName;
+    });
+    
+    // Update welcome message
+    if (welcomeAdminNameElement) {
+        welcomeAdminNameElement.textContent = adminName;
+    }
+    
+    // Update email elements
+    [adminEmailElement, mobileAdminEmailElement].forEach(element => {
+        if (element) element.textContent = adminEmail;
+    });
+    
+    // Update initials
+    const initials = adminData?.name 
+        ? adminData.name.split(' ').map(n => n[0]).join('').toUpperCase()
+        : auth.currentUser.email[0].toUpperCase();
+    
+    [adminInitialsElement, adminInitialsNavElement, mobileAdminInitialsElement].forEach(element => {
+        if (element) element.textContent = initials;
+    });
+}
+
+// Update current date
+function updateCurrentDate() {
+    const now = new Date();
+    const options = { 
+        weekday: 'long',
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        timeZone: 'Asia/Manila' 
+    };
+    const formattedDate = now.toLocaleDateString('en-US', options);
+    
+    if (currentDateElement) {
+        currentDateElement.textContent = formattedDate;
     }
 }
 
-// Get pending approvals count from Firestore
+// Setup real-time pending approvals listener
 function setupPendingApprovalListener() {
     try {
         // Query for users with approval_status "pending"
@@ -89,41 +121,67 @@ function setupPendingApprovalListener() {
         );
         
         // Real-time listener for pending approvals
-        onSnapshot(pendingQuery, (snapshot) => {
+        const unsubscribe = onSnapshot(pendingQuery, (snapshot) => {
             const pendingCount = snapshot.size;
             
-            // Update the counter
-            if (pendingCountElement) {
-                pendingCountElement.textContent = `${pendingCount} Student${pendingCount !== 1 ? 's' : ''}`;
-            }
-            
-            // Update header pending count
-            const headerPendingElement = document.getElementById('pendingApprovals');
-            if (headerPendingElement) {
-                headerPendingElement.textContent = `${pendingCount} Pending Approval${pendingCount !== 1 ? 's' : ''}`;
+            // Update mobile menu pending count
+            const pendingCountMobileElement = document.getElementById('pendingCountMobile');
+            if (pendingCountMobileElement) {
+                pendingCountMobileElement.textContent = pendingCount;
             }
             
             console.log(`Pending approvals: ${pendingCount}`);
+            
+            // Auto-refresh stats when pending count changes
+            if (window.refreshStats) {
+                window.refreshStats();
+            }
+            
         }, (error) => {
             console.error("Error listening to pending approvals:", error);
-            if (pendingCountElement) {
-                pendingCountElement.textContent = "Error loading";
-            }
         });
+        
+        return unsubscribe;
+        
     } catch (error) {
         console.error("Error setting up pending listener:", error);
-        if (pendingCountElement) {
-            pendingCountElement.textContent = "Error loading";
-        }
+        return () => {};
     }
 }
-
-// Navigate to approvals page
-function navigateToApprovals() {
-    window.location.href = '../pendingApproval/approvals.html';
+// Navbar menu toggle
+function setupNavbarMenu() {
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+    }
+    
+    if (closeMenu) {
+        closeMenu.addEventListener('click', () => {
+            mobileMenu.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    }
+    
+    // Close menu when clicking outside
+    mobileMenu.addEventListener('click', (e) => {
+        if (e.target === mobileMenu) {
+            mobileMenu.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+    
+    // Close menu with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+            mobileMenu.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
 }
 
-// Logout function
+
 async function handleLogout() {
     try {
         await AdminLogger.logout();
@@ -131,31 +189,16 @@ async function handleLogout() {
         console.log("Admin logged out");
         
         sessionStorage.clear();
+        localStorage.clear();
         window.location.href = "../login/admin-login.html";
     } catch (error) {
         console.error("Logout error:", error);
-    }
-}
-
-// Update current date
-function updateCurrentDate() {
-    const now = new Date();
-    const options = { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit',
-        timeZone: 'Asia/Manila' 
-    };
-    const formattedDate = now.toLocaleDateString('en-US', options);
-    
-    const timeElement = document.getElementById('capacity-time').querySelector('time');
-    if (timeElement) {
-        timeElement.textContent = formattedDate;
-        timeElement.setAttribute('datetime', now.toISOString());
+        alert("Logout failed. Please try again.");
     }
 }
 
 // Check authentication state
+let unsubscribePending;
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         console.log("Admin is logged in:", user.email);
@@ -163,32 +206,91 @@ onAuthStateChanged(auth, async (user) => {
         const adminData = await getAdminData();
         updateAdminUI(adminData);
         
+        // Store admin data
         sessionStorage.setItem('adminData', JSON.stringify(adminData));
         sessionStorage.setItem('adminEmail', user.email);
         sessionStorage.setItem('adminUID', user.uid);
         
+        // Update current date
+        updateCurrentDate();
+        
         // Setup pending approvals listener
-        setupPendingApprovalListener();
+        if (unsubscribePending) {
+            unsubscribePending();
+        }
+        unsubscribePending = setupPendingApprovalListener();
         
         // Initialize charts
         initializeCharts();
         
     } else {
         console.log("No admin logged in, redirecting to login...");
-        window.location.href = "../admin-login.html";
+        if (unsubscribePending) {
+            unsubscribePending();
+        }
+        window.location.href = "../login/admin-login.html";
     }
 });
 
 // Event listeners
-logoutBtn.addEventListener('click', handleLogout);
-if (viewPendingBtn) {
-    viewPendingBtn.addEventListener('click', navigateToApprovals);
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', handleLogout);
 }
 
-// Initialize dashboard
+if (logoutBtnMobile) {
+    logoutBtnMobile.addEventListener('click', handleLogout);
+}
+
+// Setup navbar menu
+setupNavbarMenu();
+
+// Initialize dashboard - SINGLE DOMContentLoaded EVENT LISTENER
 document.addEventListener('DOMContentLoaded', function() {
-    updateCurrentDate();
     console.log("Dashboard initialized");
     
+    // Update date every minute
     setInterval(updateCurrentDate, 60000);
+    
+    // Make refreshStats globally accessible for real-time updates
+    window.refreshStats = async function() {
+        try {
+            console.log("Refreshing stats via real-time update...");
+        } catch (error) {
+            console.error("Error refreshing stats:", error);
+        }
+    };
+    
+    // Add animation styles for export feature
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    if (unsubscribePending) {
+        unsubscribePending();
+    }
 });

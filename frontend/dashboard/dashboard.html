@@ -1,184 +1,361 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - ParkQueue Analytics</title>
+    <title>ParkQueue - Admin</title>
+    <link rel="icon" type="image/jpg" href="../../img/logow.png" />
     <link rel="stylesheet" href="dashboard.css">
-    <link rel="icon" type="image/jpg" href="pics/icon.jpg">
-    <!-- Chart.js for real graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
-
 <body>
-    <!-- Navigation Sidebar -->
-    <nav class="sidebar" aria-label="Main navigation">
-        <div class="admin-info">
-            <div class="admin-avatar">
-                <span id="adminInitials">A</span>
+    <nav class="top-navbar">
+        <div class="navbar-left">
+            <div class="navbar-brand">
+                <h1 class="brand-title">
+                    <a href="dashboard.html">ParkQueue</a>
+                </h1>
             </div>
-            <div class="admin-details">
-                <span id="adminName" class="admin-name">Loading...</span>
-                <span id="adminEmail" class="admin-email">admin@example.com</span>
-            </div>
-            <button id="logoutBtn" class="logout-btn">Logout</button>
+            <button id="menuToggle" class="menu-toggle" aria-label="Toggle menu">
+                <span class="burger-line"></span>
+                <span class="burger-line"></span>
+                <span class="burger-line"></span>
+            </button>
         </div>
-        <h1 class="sidebar__title">
-            <a href="admin-dashboard.html">ParkQueue</a>
-        </h1>
-        <ul class="sidebar__menu">
-            <li class="sidebar__menu-item">
-                <a href="admin-dashboard.html" class="sidebar__link">Account Statistics</a>
-            </li>
-            <li class="sidebar__menu-item">
-                <a href="account-management.html" class="sidebar__link">Account Management</a>
-            </li>
-            <li class="sidebar__menu-item">
-                <a href="admin-camera.html" class="sidebar__link">Camera</a>
-            </li>
-            <li class="sidebar__menu-item">
-                <a href="qr-code-gen.html" class="sidebar__link">Code Generated</a>
-            </li>
-        </ul>
-
-        <!-- Admin Profile Section -->
+        <div class="navbar-right">
+            <div class="navbar-stats">
+                <div class="stat-item">
+                    <i class="fas fa-users"></i>
+                    <span id="totalStudentsNav">0</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-clock"></i>
+                    <span id="pendingApprovalsNav">0</span>
+                </div>
+            </div>
+            <div class="date-display">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="currentDate">Loading...</span>
+            </div>
+            <div class="admin-profile-dropdown">
+                <button class="profile-toggle" id="profileToggle">
+                    <div class="admin-avatar-small">
+                        <span id="adminInitialsNav">A</span>
+                    </div>
+                    <span class="admin-name-nav" id="adminNameNav">Loading...</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="profile-dropdown-menu">
+                    <div class="dropdown-user-info">
+                        <div class="admin-avatar">
+                            <span id="adminInitials">A</span>
+                        </div>
+                        <div class="admin-details">
+                            <span id="adminName" class="admin-name">Loading...</span>
+                            <span id="adminEmail" class="admin-email">admin@example.com</span>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="dashboard.html" class="dropdown-item">
+                        <i class="fas fa-chart-bar"></i> Dashboard
+                    </a>
+                    <a href="../account-management/account-management.html" class="dropdown-item">
+                        <i class="fas fa-users"></i> Account Management
+                    </a>
+                    <a href="../pendingApproval/approvals.html" class="dropdown-item">
+                        <i class="fas fa-check-circle"></i> Pending Approvals
+                    </a>
+                    <a href="../qrscanner/qrscanner.html" class="dropdown-item">
+                        <i class="fas fa-qrcode"></i> QR Scanner
+                    </a>
+                    <a href="../dashboard/qr-code-gen.html" class="dropdown-item">
+                        <i class="fas fa-camera"></i> CCTV
+                    </a>
+                    <a href="../parking-history/parking-history.html" class="dropdown-item active">
+                        <i class="fas fa-history"></i> Parking History
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <button id="logoutBtn" class="dropdown-item logout-item">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="dashboard">
-        <!-- Dashboard Header -->
-        <header class="dashboard__header">
-            <section class="parking-status">
-                <h2 class="parking-status__title" id="capacity-time">
-                    Parking Analytics: <time datetime="2025-12-19">12/19/2025</time>
-                </h2>
-                <div class="parking-status__slots">
-                    <span class="slot slot--available" id="totalUsers">Loading Users...</span>
-                    <span class="slot slot--blank" id="pendingApprovals">Loading...</span>
+    <div id="mobileMenu" class="mobile-menu-overlay">
+        <div class="mobile-menu-content">
+            <div class="mobile-menu-header">
+                <div class="mobile-admin-info">
+                    <div class="admin-avatar">
+                        <span id="mobileAdminInitials">A</span>
+                    </div>
+                    <div class="admin-details">
+                        <span id="mobileAdminName" class="admin-name">Loading...</span>
+                        <span id="mobileAdminEmail" class="admin-email">admin@example.com</span>
+                    </div>
                 </div>
-            </section>
+                <button class="close-menu" id="closeMenu">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <ul class="mobile-menu-items">
+                <li class="mobile-menu-item">
+                    <a href="dashboard.html" class="mobile-menu-link active">
+                        <i class="fas fa-chart-bar"></i> Dashboard
+                    </a>
+                </li>
+                <li class="mobile-menu-item">
+                    <a href="../account-management/account-management.html" class="mobile-menu-link">
+                        <i class="fas fa-users"></i> Account Management
+                    </a>
+                </li>
+                <li class="mobile-menu-item">
+                    <a href="../pendingApproval/approvals.html" class="mobile-menu-link">
+                        <i class="fas fa-check-circle"></i> Pending Approvals
+                        <span class="pending-count-mobile" id="pendingCountMobile">0</span>
+                    </a>
+                </li>
+                <li class="mobile-menu-item">
+                    <a href="../Qrscanner/Qrscanner.html" class="mobile-menu-link">
+                        <i class="fas fa-camera"></i> QR Scanner
+                    </a>
+                </li>
+            </ul>
+            <div class="mobile-menu-footer">
+                <button id="logoutBtnMobile" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
 
-            <div class="dashboard__controls">
-                <div class="admin-welcome">
-                    Welcome back, <span id="welcomeAdminName">Admin</span>!
-                </div>
-                <div class="timeframe-selector">
-                    <button class="timeframe-selector__button" id="timeframeButton" aria-expanded="false"
-                        aria-haspopup="listbox">
-                        Week
+    <main class="dashboard">
+        <header class="dashboard__header">
+            <div class="header-title">
+                <h2>Welcome back, <span id="welcomeAdminName">Admin</span>!</h2>
+                <p class="subtitle">ParkQueue Management Dashboard</p>
+            </div>
+            <div class="header-actions">
+                <button class="action-btn refresh-btn" id="refreshDashboard"style="width: 150px;">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+                <div class="export-dropdown">
+                    <button class="action-btn export-btn" id="exportBtn" style="width: 175px;">
+                        <i class="fas fa-download"></i> Export Reports
+                        <i class="fas fa-chevron-down" style="margin-left: 8px; font-size: 0.8rem;"></i>
                     </button>
-                    <ul class="timeframe-selector__options" role="listbox">
-                        <li role="option" data-timeframe="day">Today</li>
-                        <li role="option" data-timeframe="week">Week</li>
-                        <li role="option" data-timeframe="month">Month</li>
-                        <li role="option" data-timeframe="year">Year</li>
-                    </ul>
+                    <div class="export-dropdown-menu">
+                        <button class="export-option" data-type="pdf">
+                            <i class="fas fa-file-pdf"></i> Export as PDF
+                        </button>
+                        <button class="export-option" data-type="excel">
+                            <i class="fas fa-file-excel"></i> Export as Excel
+                        </button>
+                        <button class="export-option" data-type="csv">
+                            <i class="fas fa-file-csv"></i> Export Data Only (CSV)
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
 
-        <!-- Dashboard Content Grid -->
-        <div class="dashboard__grid">
-            <!-- Parking Activity Section -->
-            <section class="dashboard-card dashboard-card--vehicle-report" aria-labelledby="vehicle-report-title">
-                <div class="chart-header">
-                    <h3 id="vehicle-report-title">Parking Activity This Week</h3>
-                    <div class="chart-stats">
-                        <span class="stat-item" id="weeklyActivity">0 entries</span>
+        <div class="stats-row">
+            <div class="stat-card stat-card--total">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Total Students</h3>
+                    <p class="stat-value" id="totalStudents">0</p>
+                    <div class="stat-chart-small">
+                        <canvas id="totalChart"></canvas>
                     </div>
                 </div>
-                <div class="chart-container">
-                    <canvas id="activityChart"></canvas>
+            </div>
+            <div class="stat-card stat-card--verified">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
                 </div>
-            </section>
-
-            <!-- Users by Course Section -->
-            <section class="dashboard-card dashboard-card--account-course" aria-labelledby="account-course-title">
-                <div class="chart-header">
-                    <h3 id="account-course-title">Users by Course</h3>
-                    <div class="chart-stats">
-                        <span class="stat-item" id="totalCourses">0 courses</span>
+                <div class="stat-content">
+                    <h3>Verified Accounts</h3>
+                    <p class="stat-value" id="verifiedAccounts">0</p>
+                    <div class="stat-chart-small">
+                        <canvas id="verifiedChart"></canvas>
                     </div>
                 </div>
-                <div class="chart-container">
-                    <canvas id="courseChart"></canvas>
+            </div>
+            <div class="stat-card stat-card--pending">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
                 </div>
-            </section>
-
-            <!-- Registration Trends Section -->
-            <section class="dashboard-card dashboard-card--account-weekly" aria-labelledby="account-weekly-title">
-                <div class="chart-header">
-                    <h3 id="account-weekly-title">Registration Trends</h3>
-                    <div class="chart-stats">
-                        <span class="stat-item" id="monthlyRegistrations">0 new users</span>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <canvas id="registrationChart"></canvas>
-                </div>
-            </section>
-
-            <section class="dashboard-card dashboard-card--options">
-                <div class="pending-box">
-                    <div class="pending-icon">⏳</div>
+                <div class="stat-content">
                     <h3>Pending Approvals</h3>
-                    <p class="pending-count" id="pendingCount">Loading...</p>
-                    <button class="pending-btn" id="viewPendingBtn">
-                        Review Applications
+                    <p class="stat-value" id="pendingApprovals">0</p>
+                    <button class="review-btn" id="viewPendingBtn">
+                        <i class="fas fa-eye"></i> Review
                     </button>
                 </div>
+            </div>
+            <div class="stat-card stat-card--approved">
+                <div class="stat-icon">
+                    <i class="fas fa-thumbs-up"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Approved Accounts</h3>
+                    <p class="stat-value" id="approvedAccounts">0</p>
+                    <div class="stat-chart-small">
+                        <canvas id="approvedChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="analytics-grid">
+            <section class="dashboard-card dashboard-card--parking">
+                <div class="chart-header">
+                    <h3>
+                        <i class="fas fa-car"></i> Parking Entry Analytics
+                    </h3>
+                    <div class="chart-controls">
+                        <div class="timeframe-selector">
+                            <button class="timeframe-btn active" data-timeframe="day">Daily</button>
+                            <button class="timeframe-btn" data-timeframe="week">Weekly</button>
+                            <button class="timeframe-btn" data-timeframe="month">Monthly</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="parkingEntryChart"></canvas>
+                </div>
+                <div class="chart-footer">
+                    <div class="chart-stats">
+                        <div class="stat">
+                            <span class="stat-label">Today's Entries</span>
+                            <span class="stat-value" id="todayEntries">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">This Week</span>
+                            <span class="stat-value" id="weekEntries">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Peak Hour</span>
+                            <span class="stat-value" id="peakHour">8:00 AM</span>
+                        </div>
+                    </div>
+                </div>
             </section>
 
-            <!-- Recent Activity Section -->
-            <section class="dashboard-card dashboard-card--history" aria-labelledby="account-history-title">
-                <header class="history-header">
-                    <h3 id="account-history-title">Recent Activity</h3>
-                    <div class="history-controls">
-                        <form role="search" class="search-form">
-                            <label for="history-search" class="visually-hidden">Search recent activity</label>
-                            <input type="search" id="history-search" placeholder="&#128269; Search..."
-                                class="search-form__input">
-                        </form>
-                        <button class="refresh-button" id="refreshActivity" aria-label="Refresh activity">
-                            🔄
-                        </button>
+            <section class="dashboard-card dashboard-card--year-level">
+                <div class="chart-header">
+                    <h3>
+                        <i class="fas fa-graduation-cap"></i> Students by Year Level
+                    </h3>
+                    <div class="chart-stats">
+                        <span class="stat-item" id="yearLevelStats">Total: 0</span>
                     </div>
-                </header>
-
-                <div class="table-container">
-                    <table class="history-table">
-                        <caption class="visually-hidden">Recent user activity records</caption>
-                        <thead>
-                            <tr>
-                                <th scope="col">User</th>
-                                <th scope="col">Activity</th>
-                                <th scope="col">Time</th>
-                                <th scope="col">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="activityTableBody">
-                            <!-- Dynamic content will be loaded here -->
-                            <tr>
-                                <td colspan="4" style="text-align: center; padding: 20px;">
-                                    Loading recent activity...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                </div>
+                <div class="chart-container">
+                    <canvas id="yearLevelChart"></canvas>
+                </div>
+                <div class="legend-container">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #1f8012"></span>
+                        <span class="legend-label">1st Year</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #4caf50"></span>
+                        <span class="legend-label">2nd Year</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #8bc34a"></span>
+                        <span class="legend-label">3rd Year</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #cddc39"></span>
+                        <span class="legend-label">4th Year</span>
+                    </div>
                 </div>
             </section>
         </div>
+
+        <section class="dashboard-card dashboard-card--activity">
+            <header class="activity-header">
+                <h3>
+                    <i class="fas fa-history"></i> Recent Activity
+                </h3>
+                <div class="activity-controls">
+                    <div class="search-container">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="activitySearch" placeholder="Search activities..." class="search-input">
+                    </div>
+                    <div class="filter-controls">
+                        <select id="activityFilter" class="filter-select">
+                            <option value="all">All Activities</option>
+                            <option value="registration">Registrations</option>
+                            <option value="approval">Approvals</option>
+                            <option value="parking">Parking Entries</option>
+                            <option value="violation">Violations</option>
+                        </select>
+                        <button class="refresh-btn-small" id="refreshActivity">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="activity-table-container">
+                <table class="activity-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Activity</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTableBody">
+                        <tr class="loading-row">
+                            <td colspan="5">
+                                <div class="loading-spinner-small"></div>
+                                <span>Loading activities...</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-footer">
+                <div class="pagination-info">
+                    Showing <span id="activityCount">0</span> of <span id="totalActivities">0</span> activities
+                </div>
+                <div class="pagination-controls">
+                    <button class="pagination-btn" id="prevPage" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="page-number">Page <span id="currentPage">1</span></span>
+                    <button class="pagination-btn" id="nextPage">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <p>Loading dashboard data...</p>
+        <div class="loading-content">
+            <div class="loading-spinner-large"></div>
+            <p>Loading dashboard data...</p>
+        </div>
     </div>
 
     <script type="module" src="dashboard.js"></script>
     <script type="module" src="dashboard-charts.js"></script>
 </body>
-
 </html>
