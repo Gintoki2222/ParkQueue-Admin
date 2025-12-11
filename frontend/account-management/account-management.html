@@ -1,0 +1,2203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ParkQueue - Admin</title>
+  <link rel="icon" type="image/jpg" href="../../img/logow.png" />
+  <link rel="stylesheet" href="../dashboard/dashboard.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #1f8012;
+      --primary-dark: #17690c;
+      --secondary-color: #8f7d35;
+    }
+
+    .account-management {
+      padding: 25px;
+      min-height: calc(100vh - 70px);
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .page-title {
+      font-size: 2rem;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .page-subtitle {
+      font-size: 1.2rem;
+      color: #666;
+      font-weight: 500;
+      margin-top: 5px;
+    }
+
+    .management-container {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      margin-bottom: 30px;
+    }
+
+    .management-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .management-title {
+      font-size: 1.5rem;
+      color: #333;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .management-title i {
+      color: var(--primary-color);
+    }
+
+    .search-filter-container {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 12px;
+      color: #666;
+      z-index: 1;
+    }
+
+    .search-input {
+      padding: 12px 15px 12px 40px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      width: 300px;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(31, 128, 18, 0.1);
+    }
+
+    .filter-select {
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      background: #f8f9fa;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 150px;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(31, 128, 18, 0.1);
+    }
+
+    .action-btn {
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .refresh-btn {
+      background: #f0f7ff;
+      color: #2196f3;
+      border: 2px solid #2196f3;
+    }
+
+    .refresh-btn:hover {
+      background: #2196f3;
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .export-btn {
+      background: #f0f7ff;
+      color: #4caf50;
+      border: 2px solid #4caf50;
+    }
+
+    .export-btn:hover {
+      background: #4caf50;
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .accounts-table-container {
+      overflow: auto;
+      border-radius: 10px;
+      border: 2px solid #f0f0f0;
+      margin-top: 20px;
+    }
+
+    .accounts-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1000px;
+    }
+
+    .accounts-table th {
+      background-color: #f8f9fa;
+      padding: 18px 20px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      white-space: nowrap;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .accounts-table td {
+      padding: 18px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      color: #555;
+      vertical-align: middle;
+    }
+
+    .accounts-table tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    .account-number {
+      font-weight: 600;
+      color: #333;
+      width: 50px;
+    }
+
+    .account-id {
+      font-family: 'Courier New', monospace;
+      color: var(--primary-color);
+      font-weight: 500;
+      background: rgba(31, 128, 18, 0.1);
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .account-name {
+      font-weight: 500;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1f8012 0%, #8f7d35 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .account-time {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .account-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .table-action-btn {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 80px;
+      justify-content: center;
+    }
+
+    .view-btn {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .view-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .edit-btn {
+      background: #ffc107;
+      color: #212529;
+    }
+
+    .edit-btn:hover {
+      background: #e0a800;
+      transform: translateY(-2px);
+    }
+
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+    }
+
+    .delete-btn:hover {
+      background: #c82333;
+      transform: translateY(-2px);
+    }
+
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .status-active {
+      background: rgba(31, 128, 18, 0.1);
+      color: var(--primary-color);
+    }
+
+    .status-pending {
+      background: rgba(255, 193, 7, 0.1);
+      color: #d39e00;
+    }
+
+    .status-inactive {
+      background: rgba(108, 117, 125, 0.1);
+      color: #6c757d;
+    }
+
+    .loading-row td {
+      text-align: center;
+      padding: 40px !important;
+    }
+
+    .loading-spinner-small {
+      width: 30px;
+      height: 30px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .bulk-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-top: 20px;
+      border: 2px solid #f0f0f0;
+    }
+
+    .bulk-select {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .bulk-checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .bulk-count {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .bulk-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .bulk-delete-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .bulk-delete-btn:hover {
+      background: #c82333;
+      transform: translateY(-2px);
+    }
+
+    .bulk-export-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .bulk-export-btn:hover {
+      background: #218838;
+      transform: translateY(-2px);
+    }
+
+    .table-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 20px;
+      border-top: 1px solid #f0f0f0;
+      margin-top: 20px;
+    }
+
+    .pagination-info {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .pagination-btn {
+      background: #f5f5f5;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: white;
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .page-number {
+      font-size: 14px;
+      color: #666;
+      font-weight: 500;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1001;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      padding: 25px 30px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, #1f8012 0%, #8f7d35 100%);
+      color: white;
+      border-radius: 16px 16px 0 0;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .close-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: rotate(90deg);
+    }
+
+    .modal-body {
+      padding: 30px;
+    }
+
+    .user-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .detail-group {
+      margin-bottom: 15px;
+    }
+
+    .detail-label {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 8px;
+      display: block;
+      font-weight: 500;
+    }
+
+    .detail-value {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #333;
+      padding: 12px 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 2px solid #f0f0f0;
+      word-break: break-word;
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 25px 0 15px 0;
+      color: #333;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title i {
+      color: var(--primary-color);
+    }
+
+    .modal-footer {
+      padding: 20px 30px;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+    }
+
+    .modal-action-btn {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      min-width: 120px;
+      justify-content: center;
+    }
+
+    .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      border-color: var(--primary-color);
+    }
+
+    .stat-card.active {
+      border-color: var(--primary-color);
+      background: rgba(31, 128, 18, 0.05);
+    }
+
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+    }
+
+    .stat-card--total .stat-icon {
+      background: linear-gradient(135deg, #1f8012, #4caf50);
+    }
+
+    .stat-card--active .stat-icon {
+      background: linear-gradient(135deg, #2196f3, #03a9f4);
+    }
+
+    .stat-card--pending .stat-icon {
+      background: linear-gradient(135deg, #ff9800, #ffb74d);
+    }
+
+    .stat-card--inactive .stat-icon {
+      background: linear-gradient(135deg, #6c757d, #9e9e9e);
+    }
+
+    .stat-content h3 {
+      margin: 0 0 8px 0;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #666;
+    }
+
+    .stat-value {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #222;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      color: #ddd;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .empty-state h3 {
+      font-size: 1.5rem;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .empty-state p {
+      font-size: 1rem;
+      color: #666;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1200px) {
+      .stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .user-detail-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 992px) {
+      .management-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+      }
+
+      .search-filter-container {
+        width: 100%;
+      }
+
+      .search-input {
+        width: 100%;
+      }
+
+      .stats-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .account-management {
+        padding: 20px;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      .bulk-actions {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+      }
+
+      .bulk-buttons {
+        width: 100%;
+      }
+
+      .bulk-delete-btn,
+      .bulk-export-btn {
+        flex: 1;
+        justify-content: center;
+      }
+
+      .table-footer {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+      }
+
+      .pagination-controls {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .modal-content {
+        width: 95%;
+        margin: 10px;
+      }
+
+      .modal-header,
+      .modal-body,
+      .modal-footer {
+        padding: 20px;
+      }
+
+      .modal-footer {
+        flex-direction: column;
+      }
+
+      .modal-action-btn {
+        width: 100%;
+      }
+
+      .account-actions {
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .table-action-btn {
+        min-width: auto;
+        padding: 8px 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="top-navbar">
+    <div class="navbar-left">
+      <div class="navbar-brand">
+        <h1 class="brand-title"> <a href="../dashboard/dashboard.html">ParkQueue</a> </h1>
+      </div>
+      <button id="menuToggle" class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+      </button>
+
+    </div>
+
+    <div class="navbar-right">
+      <div class="navbar-stats">
+        <div class="stat-item">
+          <i class="fas fa-users"></i>
+          <span id="totalAccountsNav">0</span>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-clock"></i>
+          <span id="pendingAccountsNav">0</span>
+        </div>
+      </div>
+
+      <div class="date-display">
+        <i class="fas fa-calendar-alt"></i>
+        <span id="currentDate">Loading...</span>
+      </div>
+
+      <div class="admin-profile-dropdown">
+        <button class="profile-toggle" id="profileToggle" aria-expanded="false">
+          <div class="admin-avatar-small">
+            <span id="adminInitialsNav">A</span>
+          </div>
+          <span class="admin-name-nav" id="adminNameNav">Loading...</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="profile-dropdown-menu">
+          <div class="dropdown-user-info">
+            <div class="admin-avatar">
+              <span id="adminInitials">A</span>
+            </div>
+            <div class="admin-details">
+              <span id="adminName" class="admin-name">Loading...</span>
+              <span id="adminEmail" class="admin-email">admin@example.com</span>
+            </div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a href="../dashboard/dashboard.html" class="dropdown-item">
+            <i class="fas fa-chart-bar"></i> Dashboard
+          </a>
+          <a href="account-management.html" class="dropdown-item active">
+            <i class="fas fa-users"></i> Account Management
+          </a>
+          <a href="../pendingApproval/approvals.html" class="dropdown-item">
+            <i class="fas fa-check-circle"></i> Pending Approvals
+          </a>
+          <a href="../qrscanner/qrscanner.html" class="dropdown-item">
+            <i class="fas fa-qrcode"></i> QR Scanner
+          </a>
+          <a href="../dashboard/qr-code-gen.html" class="dropdown-item">
+            <i class="fas fa-camera"></i> CCTV
+          </a>
+          <a href="../parking-history/parking-history.html" class="dropdown-item active">
+            <i class="fas fa-history"></i> Parking History
+          </a>
+          <div class="dropdown-divider"></div>
+          <button id="logoutBtn" class="dropdown-item logout-item">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div id="mobileMenu" class="mobile-menu-overlay">
+    <div class="mobile-menu-content">
+      <div class="mobile-menu-header">
+        <div class="mobile-admin-info">
+          <div class="admin-avatar">
+            <span id="mobileAdminInitials">A</span>
+          </div>
+          <div class="admin-details">
+            <span id="mobileAdminName" class="admin-name">Loading...</span>
+            <span id="mobileAdminEmail" class="admin-email">admin@example.com</span>
+          </div>
+        </div>
+        <button class="close-menu" id="closeMenu">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <ul class="mobile-menu-items">
+        <li class="mobile-menu-item">
+          <a href="../dashboard/dashboard.html" class="mobile-menu-link">
+            <i class="fas fa-chart-bar"></i> Dashboard
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="account-management.html" class="mobile-menu-link active">
+            <i class="fas fa-users"></i> Account Management
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="../pendingApproval/approvals.html" class="mobile-menu-link">
+            <i class="fas fa-check-circle"></i> Pending Approvals
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="../qrscanner/qrscanner.html" class="mobile-menu-link">
+            <i class="fas fa-qrcode"></i> QR Scanner
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="../dashboard/qr-code-gen.html" class="mobile-menu-link">
+            <i class="fas fa-camera"></i> CCTV
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+        <a href="../parking-history/parking-history.html" class="dropdown-item active">
+            <i class="fas fa-history"></i> Parking History
+          </a>
+          </li>
+      </ul>
+
+      <div class="mobile-menu-footer">
+        <button id="logoutBtnMobile" class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <main class="account-management">
+    <div class="stats-cards">
+      <div class="stat-card stat-card--total" data-filter="all">
+        <div class="stat-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-content">
+          <h3>Total Accounts</h3>
+          <p class="stat-value" id="totalAccounts">0</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card--active" data-filter="active">
+        <div class="stat-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-content">
+          <h3>Active Accounts</h3>
+          <p class="stat-value" id="activeAccounts">0</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card--pending" data-filter="pending">
+        <div class="stat-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-content">
+          <h3>Pending Accounts</h3>
+          <p class="stat-value" id="pendingAccounts">0</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card--inactive" data-filter="inactive">
+        <div class="stat-icon">
+          <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="stat-content">
+          <h3>Inactive Accounts</h3>
+          <p class="stat-value" id="inactiveAccounts">0</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="management-container">
+      <div class="management-header">
+        <h2 class="management-title">
+          <i class="fas fa-id-card"></i> Student Accounts
+        </h2>
+
+        <div class="search-filter-container">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" class="search-input" id="searchInput" placeholder="Search by name, ID, or email..." />
+          </div>
+
+          <select class="filter-select" id="statusFilter">
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="pending">Pending</option>
+            <option value="inactive">Inactive</option>
+          </select>
+
+          <select class="filter-select" id="sortFilter">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="name">Name (A-Z)</option>
+          </select>
+
+          <button class="action-btn refresh-btn" id="refreshBtn">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+
+          <button class="action-btn export-btn" id="exportAllBtn">
+            <i class="fas fa-download"></i> Export All
+          </button>
+        </div>
+      </div>
+
+      <div class="accounts-table-container">
+        <table class="accounts-table" id="accountsTable">
+          <thead>
+            <tr>
+              <th style="width: 60px;">
+                <input type="checkbox" id="selectAllHeader" class="bulk-checkbox">
+              </th>
+              <th>No.</th>
+              <th>Student ID</th>
+              <th>Account Name</th>
+              <th>Email</th>
+              <th>Date Registered</th>
+              <th>Status</th>
+              <th style="width: 200px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="accountsTableBody">
+            <tr class="loading-row">
+              <td colspan="8">
+                <div class="loading-spinner-small"></div>
+                <span style="color: #666;">Loading accounts...</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="bulk-actions" id="bulkActions" style="display: none;">
+        <div class="bulk-select">
+          <input type="checkbox" id="selectAllBulk" class="bulk-checkbox">
+          <span class="bulk-count" id="selectedCount">0 selected</span>
+        </div>
+        <div class="bulk-buttons">
+          <button class="bulk-delete-btn" id="deleteSelectedBtn" disabled>
+            <i class="fas fa-trash"></i> Delete Selected
+          </button>
+          <button class="bulk-export-btn" id="exportSelectedBtn" disabled>
+            <i class="fas fa-download"></i> Export Selected
+          </button>
+        </div>
+      </div>
+
+      <div class="table-footer">
+        <div class="pagination-info">
+          Showing <span id="currentCount">0</span> of <span id="totalCount">0</span> accounts
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn" id="prevPage" disabled>
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <span class="page-number">Page <span id="currentPage">1</span> of <span id="totalPages">1</span></span>
+          <button class="pagination-btn" id="nextPage">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal" id="accountModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-user-circle"></i> <span id="modalAccountName">Account Details</span>
+        </h3>
+        <button class="close-btn" id="closeModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body" id="modalBody">
+      </div>
+      <div class="modal-footer">
+        <button class="modal-action-btn edit-btn" id="editAccountBtn">
+          <i class="fas fa-edit"></i> Edit Account
+        </button>
+        <button class="modal-action-btn delete-btn" id="deleteAccountBtn">
+          <i class="fas fa-trash"></i> Delete Account
+        </button>
+        <button class="modal-action-btn view-btn" id="closeModalBtn">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-content">
+      <div class="loading-spinner-large"></div>
+      <p>Loading account data...</p>
+    </div>
+  </div>
+
+<script type="module">
+import {
+  auth,
+  db,
+  onAuthStateChanged,
+  signOut,
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  deleteDoc,
+  Timestamp
+} from '../firebase.js';
+
+class AccountManager {
+  constructor() {
+    this.currentUser = null;
+    this.allAccounts = [];
+    this.filteredAccounts = [];
+    this.currentPage = 1;
+    this.accountsPerPage = 10;
+    this.selectedAccounts = new Set();
+    this.currentFilter = 'all';
+    this.isLoading = false;
+    this.maxRetries = 3;
+
+    this.initializeElements();
+    this.setupEventListeners();
+    this.checkAuth();
+  }
+
+  initializeElements() {
+    this.menuToggle = document.getElementById('menuToggle');
+    this.closeMenu = document.getElementById('closeMenu');
+    this.mobileMenu = document.getElementById('mobileMenu');
+    this.profileToggle = document.getElementById('profileToggle');
+    this.logoutBtn = document.getElementById('logoutBtn');
+    this.logoutBtnMobile = document.getElementById('logoutBtnMobile');
+
+    this.adminNameNav = document.getElementById('adminNameNav');
+    this.adminInitialsNav = document.getElementById('adminInitialsNav');
+    this.adminName = document.getElementById('adminName');
+    this.adminEmail = document.getElementById('adminEmail');
+    this.adminInitials = document.getElementById('adminInitials');
+    this.mobileAdminName = document.getElementById('mobileAdminName');
+    this.mobileAdminEmail = document.getElementById('mobileAdminEmail');
+    this.mobileAdminInitials = document.getElementById('mobileAdminInitials');
+    this.currentDateElement = document.getElementById('currentDate');
+
+    this.totalAccountsElement = document.getElementById('totalAccounts');
+    this.activeAccountsElement = document.getElementById('activeAccounts');
+    this.pendingAccountsElement = document.getElementById('pendingAccounts');
+    this.inactiveAccountsElement = document.getElementById('inactiveAccounts');
+    this.totalAccountsNav = document.getElementById('totalAccountsNav');
+    this.pendingAccountsNav = document.getElementById('pendingAccountsNav');
+
+    this.searchInput = document.getElementById('searchInput');
+    this.statusFilter = document.getElementById('statusFilter');
+    this.sortFilter = document.getElementById('sortFilter');
+    this.refreshBtn = document.getElementById('refreshBtn');
+    this.exportAllBtn = document.getElementById('exportAllBtn');
+
+    this.accountsTableBody = document.getElementById('accountsTableBody');
+    this.selectAllHeader = document.getElementById('selectAllHeader');
+
+    this.bulkActions = document.getElementById('bulkActions');
+    this.selectAllBulk = document.getElementById('selectAllBulk');
+    this.selectedCount = document.getElementById('selectedCount');
+    this.deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    this.exportSelectedBtn = document.getElementById('exportSelectedBtn');
+
+    this.currentCount = document.getElementById('currentCount');
+    this.totalCount = document.getElementById('totalCount');
+    this.currentPageElement = document.getElementById('currentPage');
+    this.totalPages = document.getElementById('totalPages');
+    this.prevPageBtn = document.getElementById('prevPage');
+    this.nextPageBtn = document.getElementById('nextPage');
+
+    this.accountModal = document.getElementById('accountModal');
+    this.closeModalBtn = document.getElementById('closeModal');
+    this.closeModalBtn2 = document.getElementById('closeModalBtn');
+    this.modalBody = document.getElementById('modalBody');
+    this.modalAccountName = document.getElementById('modalAccountName');
+    this.editAccountBtn = document.getElementById('editAccountBtn');
+    this.deleteAccountBtn = document.getElementById('deleteAccountBtn');
+
+    this.statCards = document.querySelectorAll('.stat-card');
+  }
+
+  setupEventListeners() {
+    if (this.menuToggle) {
+      this.menuToggle.addEventListener('click', () => {
+        this.mobileMenu.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    }
+
+    if (this.closeMenu) {
+      this.closeMenu.addEventListener('click', () => {
+        this.mobileMenu.classList.remove('active');
+        document.body.style.overflow = '';
+      });
+    }
+
+    this.mobileMenu.addEventListener('click', (e) => {
+      if (e.target === this.mobileMenu) {
+        this.mobileMenu.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    });
+
+    if (this.profileToggle) {
+      const profileDropdown = document.querySelector('.profile-dropdown-menu');
+      this.profileToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileDropdown.classList.toggle('show');
+      });
+
+      document.addEventListener('click', () => {
+        profileDropdown.classList.remove('show');
+      });
+    }
+
+    if (this.logoutBtn) {
+      this.logoutBtn.addEventListener('click', () => this.handleLogout());
+    }
+
+    if (this.logoutBtnMobile) {
+      this.logoutBtnMobile.addEventListener('click', () => this.handleLogout());
+    }
+
+    this.searchInput.addEventListener('input', () => this.applyFilters());
+    this.statusFilter.addEventListener('change', () => this.applyFilters());
+    this.sortFilter.addEventListener('change', () => this.applyFilters());
+
+    this.refreshBtn.addEventListener('click', () => this.loadAccounts());
+
+    this.exportAllBtn.addEventListener('click', () => this.exportAllAccounts());
+
+    this.statCards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        const filter = card.dataset.filter;
+        this.currentFilter = filter;
+
+        this.statCards.forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+
+        this.statusFilter.value = filter;
+        this.applyFilters();
+      });
+    });
+
+    this.selectAllHeader.addEventListener('change', (e) => {
+      const checkboxes = document.querySelectorAll('.account-checkbox');
+      checkboxes.forEach(cb => {
+        cb.checked = e.target.checked;
+        const accountId = cb.dataset.accountId;
+        if (e.target.checked) {
+          this.selectedAccounts.add(accountId);
+        } else {
+          this.selectedAccounts.delete(accountId);
+        }
+      });
+      this.updateBulkActions();
+    });
+
+    this.selectAllBulk.addEventListener('change', (e) => {
+      const checkboxes = document.querySelectorAll('.account-checkbox');
+      checkboxes.forEach(cb => {
+        cb.checked = e.target.checked;
+        const accountId = cb.dataset.accountId;
+        if (e.target.checked) {
+          this.selectedAccounts.add(accountId);
+        } else {
+          this.selectedAccounts.delete(accountId);
+        }
+      });
+      this.updateBulkActions();
+    });
+
+    this.deleteSelectedBtn.addEventListener('click', () => this.deleteSelectedAccounts());
+    this.exportSelectedBtn.addEventListener('click', () => this.exportSelectedAccounts());
+
+    this.prevPageBtn.addEventListener('click', () => {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+        this.displayAccounts();
+        this.updatePagination();
+      }
+    });
+
+    this.nextPageBtn.addEventListener('click', () => {
+      if (this.currentPage < Math.ceil(this.filteredAccounts.length / this.accountsPerPage)) {
+        this.currentPage++;
+        this.displayAccounts();
+        this.updatePagination();
+      }
+    });
+
+    this.closeModalBtn.addEventListener('click', () => {
+      this.accountModal.style.display = 'none';
+    });
+
+    this.closeModalBtn2.addEventListener('click', () => {
+      this.accountModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === this.accountModal) {
+        this.accountModal.style.display = 'none';
+      }
+    });
+
+    setInterval(() => this.updateCurrentDate(), 60000);
+  }
+
+  async checkAuth() {
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        this.currentUser = user;
+        await this.updateAdminUI();
+        await this.loadAccounts();
+        this.updateCurrentDate();
+      } else {
+        window.location.href = "../login/admin-login.html";
+      }
+    });
+  }
+
+  async updateAdminUI() {
+    try {
+      const adminQuery = query(
+        collection(db, "Admin"),
+        where("email", "==", this.currentUser.email)
+      );
+      const querySnapshot = await getDocs(adminQuery);
+
+      let adminData = null;
+      if (!querySnapshot.empty) {
+        adminData = querySnapshot.docs[0].data();
+      }
+
+      const adminName = adminData?.name || this.currentUser.email.split('@')[0];
+      const adminEmail = adminData?.email || this.currentUser.email;
+
+      [this.adminName, this.adminNameNav, this.mobileAdminName].forEach(element => {
+        if (element) element.textContent = adminName;
+      });
+
+      [this.adminEmail, this.mobileAdminEmail].forEach(element => {
+        if (element) element.textContent = adminEmail;
+      });
+
+      const initials = adminData?.name
+        ? adminData.name.split(' ').map(n => n[0]).join('').toUpperCase()
+        : this.currentUser.email[0].toUpperCase();
+
+      [this.adminInitials, this.adminInitialsNav, this.mobileAdminInitials].forEach(element => {
+        if (element) element.textContent = initials;
+      });
+
+    } catch (error) {
+      this.showNotification("Error loading admin info", "error");
+    }
+  }
+
+  updateCurrentDate() {
+    const now = new Date();
+    const options = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'Asia/Manila'
+    };
+    const formattedDate = now.toLocaleDateString('en-US', options);
+
+    if (this.currentDateElement) {
+      this.currentDateElement.textContent = formattedDate;
+    }
+  }
+
+  async loadAccounts(retryCount = 0) {
+    if (this.isLoading) return;
+    
+    try {
+      this.isLoading = true;
+      this.showLoading();
+
+      const usersSnapshot = await getDocs(collection(db, "users"));
+      const accounts = [];
+
+      for (const userDoc of usersSnapshot.docs) {
+        const userData = userDoc.data();
+
+        if (userData.isAdmin === true) continue;
+
+        let studentId = "";
+        try {
+          const personalQuery = query(
+            collection(db, "personalInfo"),
+            where("user_id", "==", userDoc.id)
+          );
+          const personalSnapshot = await getDocs(personalQuery);
+          
+          if (!personalSnapshot.empty) {
+            const personalData = personalSnapshot.docs[0].data();
+            studentId = personalData.student_id || "";
+          }
+        } catch (error) {
+          console.warn("Could not fetch personal info:", error);
+        }
+
+        let status = "pending";
+        if (userData.admin_approved === true) {
+          status = "active";
+        } else if (userData.admin_approved === false) {
+          status = "inactive";
+        }
+
+        const account = {
+          id: userDoc.id,
+          uid: userData.uid || "",
+          email: userData.email || "",
+          displayName: userData.displayName || "",
+          username: userData.username || "",
+          firstName: userData.first_name || "",
+          lastName: userData.last_name || "",
+          studentId: studentId,
+          status: status,
+          createdAt: userData.created_at?.toDate() || userData.createdAt?.toDate() || new Date(),
+          lastLogin: userData.last_login?.toDate() || null,
+          personalInfo: {}
+        };
+
+        accounts.push(account);
+      }
+
+      this.allAccounts = accounts;
+      this.updateStats();
+      this.applyFilters();
+      this.hideLoading();
+      this.isLoading = false;
+
+    } catch (error) {
+      this.isLoading = false;
+      
+      if (retryCount < this.maxRetries) {
+        setTimeout(() => this.loadAccounts(retryCount + 1), 2000 * (retryCount + 1));
+      } else {
+        this.showError("Failed to load accounts");
+      }
+    }
+  }
+
+  async fetchPersonalInfo(userId) {
+    try {
+      const personalQuery = query(
+        collection(db, "personalInfo"),
+        where("user_id", "==", userId)
+      );
+      const personalSnapshot = await getDocs(personalQuery);
+
+      if (!personalSnapshot.empty) {
+        return personalSnapshot.docs[0].data();
+      }
+      return null;
+    } catch (error) {
+      console.error("Error fetching personal info:", error);
+      return null;
+    }
+  }
+
+  async fetchVehicleInfo(userId) {
+    try {
+      const vehicleQuery = query(
+        collection(db, "motorInfo"),
+        where("user_id", "==", userId)
+      );
+      const vehicleSnapshot = await getDocs(vehicleQuery);
+
+      if (!vehicleSnapshot.empty) {
+        const vehicleData = vehicleSnapshot.docs[0].data();
+        console.log("Vehicle data fetched:", vehicleData); // Debug log
+        
+        // FIX: Map the correct field names
+        return {
+          brand: vehicleData.motorcycle_brand || vehicleData.brand || '',
+          model: vehicleData.motorcycle_model || vehicleData.model || '',
+          color: vehicleData.motorcycle_color || vehicleData.color || '',
+          plate_number: vehicleData.plate_number || '',
+          license_number: vehicleData.license_number || '',
+          license_expiry: vehicleData.license_expiry,
+          // Include all original data for debugging
+          ...vehicleData
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error("Error fetching vehicle info:", error);
+      return null;
+    }
+  }
+
+  updateStats() {
+    const total = this.allAccounts.length;
+    const active = this.allAccounts.filter(a => a.status === 'active').length;
+    const pending = this.allAccounts.filter(a => a.status === 'pending').length;
+    const inactive = this.allAccounts.filter(a => a.status === 'inactive').length;
+
+    this.totalAccountsElement.textContent = total;
+    this.activeAccountsElement.textContent = active;
+    this.pendingAccountsElement.textContent = pending;
+    this.inactiveAccountsElement.textContent = inactive;
+
+    if (this.totalAccountsNav) this.totalAccountsNav.textContent = total;
+    if (this.pendingAccountsNav) this.pendingAccountsNav.textContent = pending;
+  }
+
+  applyFilters() {
+    let filtered = [...this.allAccounts];
+
+    const searchTerm = this.searchInput.value.toLowerCase().trim();
+    if (searchTerm) {
+      filtered = filtered.filter(account => {
+        const searchFields = [
+          account.email,
+          account.displayName,
+          account.username,
+          account.firstName,
+          account.lastName,
+          account.studentId,
+          account.id
+        ];
+
+        return searchFields.some(field =>
+          field && field.toString().toLowerCase().includes(searchTerm)
+        );
+      });
+    }
+
+    const statusValue = this.statusFilter.value;
+    if (statusValue !== "all") {
+      filtered = filtered.filter(account => account.status === statusValue);
+    }
+
+    const sortValue = this.sortFilter.value;
+    switch (sortValue) {
+      case "newest":
+        filtered.sort((a, b) => b.createdAt - a.createdAt);
+        break;
+      case "oldest":
+        filtered.sort((a, b) => a.createdAt - b.createdAt);
+        break;
+      case "name":
+        filtered.sort((a, b) => {
+          const nameA = a.displayName || `${a.firstName} ${a.lastName}` || a.username || a.email;
+          const nameB = b.displayName || `${b.firstName} ${b.lastName}` || b.username || b.email;
+          return nameA.localeCompare(nameB);
+        });
+        break;
+    }
+
+    this.filteredAccounts = filtered;
+    this.currentPage = 1;
+    this.selectedAccounts.clear();
+    this.selectAllHeader.checked = false;
+    this.selectAllBulk.checked = false;
+    this.displayAccounts();
+    this.updatePagination();
+  }
+
+  displayAccounts() {
+    if (this.filteredAccounts.length === 0) {
+      this.accountsTableBody.innerHTML = `
+        <tr class="empty-state">
+          <td colspan="8">
+            <i class="fas fa-user-slash"></i>
+            <h3>No accounts found</h3>
+            <p>Try adjusting your search or filter criteria</p>
+          </td>
+        </tr>
+      `;
+      this.bulkActions.style.display = "none";
+      return;
+    }
+
+    const startIndex = (this.currentPage - 1) * this.accountsPerPage;
+    const endIndex = startIndex + this.accountsPerPage;
+    const pageAccounts = this.filteredAccounts.slice(startIndex, endIndex);
+
+    let tableHTML = "";
+
+    pageAccounts.forEach((account, index) => {
+      const accountNumber = startIndex + index + 1;
+      const studentId = account.studentId || 'N/A';
+      
+      let studentIdDisplay;
+      if (studentId === 'N/A' || !studentId || studentId.trim() === '') {
+        studentIdDisplay = `<span style="color: #ff9800; font-style: italic;">${account.id.substring(0, 8)}</span>`;
+      } else {
+        studentIdDisplay = studentId;
+      }
+      
+      const accountName = account.displayName || `${account.firstName} ${account.lastName}`.trim() || account.username || "Unknown";
+      const timeDate = this.formatDate(account.createdAt);
+      const initials = (accountName.charAt(0) || 'U').toUpperCase();
+      const isSelected = this.selectedAccounts.has(account.id);
+
+      let statusBadge = "";
+      switch (account.status) {
+        case "active":
+          statusBadge = '<span class="status-badge status-active">Active</span>';
+          break;
+        case "pending":
+          statusBadge = '<span class="status-badge status-pending">Pending</span>';
+          break;
+        case "inactive":
+          statusBadge = '<span class="status-badge status-inactive">Inactive</span>';
+          break;
+      }
+
+      tableHTML += `
+        <tr class="account-row" data-account-id="${account.id}">
+          <td>
+            <input type="checkbox" class="bulk-checkbox account-checkbox" 
+                   data-account-id="${account.id}" ${isSelected ? 'checked' : ''}>
+          </td>
+          <td class="account-number">${accountNumber}</td>
+          <td><span class="account-id">${studentIdDisplay}</span></td>
+          <td class="account-name">
+            <div class="user-avatar">${initials}</div>
+            <div>
+              <div style="font-weight: 600;">${accountName}</div>
+              <div style="font-size: 0.8rem; color: #666;">${account.username || ''}</div>
+            </div>
+          </td>
+          <td>${account.email}</td>
+          <td class="account-time">${timeDate}</td>
+          <td>${statusBadge}</td>
+          <td class="account-actions">
+            <button class="table-action-btn view-btn view-account-btn" 
+                    data-account-id="${account.id}">
+              <i class="fas fa-eye"></i> View
+            </button>
+            <button class="table-action-btn edit-btn edit-account-btn" 
+                    data-account-id="${account.id}">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    this.accountsTableBody.innerHTML = tableHTML;
+    this.bulkActions.style.display = "flex";
+    this.addAccountEventListeners();
+  }
+
+  addAccountEventListeners() {
+    document.querySelectorAll('.view-account-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const accountId = btn.dataset.accountId;
+        const account = this.allAccounts.find(acc => acc.id === accountId);
+        
+        if (account) {
+          const [personalInfo, vehicleInfo] = await Promise.all([
+            this.fetchPersonalInfo(accountId),
+            this.fetchVehicleInfo(accountId)
+          ]);
+          
+          console.log("Account data for modal:", account);
+          console.log("Personal info fetched:", personalInfo);
+          console.log("Vehicle info fetched:", vehicleInfo);
+          
+          account.personalInfo = personalInfo || {};
+          this.showAccountDetails(account, vehicleInfo);
+        }
+      });
+    });
+
+    document.querySelectorAll('.edit-account-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const accountId = btn.dataset.accountId;
+        this.editAccount(accountId);
+      });
+    });
+
+    document.querySelectorAll('.account-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', (e) => {
+        const accountId = e.target.dataset.accountId;
+        if (e.target.checked) {
+          this.selectedAccounts.add(accountId);
+        } else {
+          this.selectedAccounts.delete(accountId);
+        }
+        this.updateBulkActions();
+      });
+    });
+  }
+
+  async showAccountDetails(account, vehicleInfo) {
+    try {
+      console.log("Showing account details for:", account.email);
+      console.log("Vehicle info object:", vehicleInfo);
+      
+      const createdAt = this.formatDate(account.createdAt, true);
+      const lastLogin = account.lastLogin ? this.formatDate(account.lastLogin, true) : 'Never';
+
+      let modalHTML = `
+        <div class="section-title">
+          <i class="fas fa-user"></i> Personal Information
+        </div>
+        <div class="user-detail-grid">
+          <div class="detail-group">
+            <span class="detail-label">Account ID:</span>
+            <div class="detail-value">${account.id}</div>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Student ID:</span>
+            <div class="detail-value">${account.studentId || 'N/A'}</div>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Full Name:</span>
+            <div class="detail-value">${account.displayName || `${account.firstName} ${account.lastName}`.trim() || 'N/A'}</div>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Email:</span>
+            <div class="detail-value">${account.email}</div>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Contact Number:</span>
+            <div class="detail-value">${account.personalInfo.contact_number || 'N/A'}</div>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Course:</span>
+            <div class="detail-value">${account.personalInfo.course || 'N/A'}</div>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Year Level:</span>
+            <div class="detail-value">${account.personalInfo.year_level || 'N/A'}</div>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Section:</span>
+            <div class="detail-value">${account.personalInfo.section || 'N/A'}</div>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Account Created:</span>
+            <div class="detail-value">${createdAt}</div>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Last Login:</span>
+            <div class="detail-value">${lastLogin}</div>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Account Status:</span>
+            <div class="detail-value">
+              ${this.getStatusBadge(account.status)}
+            </div>
+          </div>
+        </div>
+      `;
+
+      if (vehicleInfo) {
+        console.log("Vehicle info available, keys:", Object.keys(vehicleInfo));
+        
+        // Get brand and model - check both naming conventions
+        const brand = vehicleInfo.brand || vehicleInfo.motorcycle_brand || '';
+        const model = vehicleInfo.model || vehicleInfo.motorcycle_model || '';
+        const color = vehicleInfo.color || vehicleInfo.motorcycle_color || '';
+        const plateNumber = vehicleInfo.plate_number || '';
+        const licenseNumber = vehicleInfo.license_number || '';
+        
+        modalHTML += `
+          <div class="section-title">
+            <i class="fas fa-motorcycle"></i> Vehicle Information
+          </div>
+          <div class="user-detail-grid">
+            <div class="detail-group">
+              <span class="detail-label">Plate Number:</span>
+              <div class="detail-value">${plateNumber || 'N/A'}</div>
+            </div>
+            <div class="detail-group">
+              <span class="detail-label">License Number:</span>
+              <div class="detail-value">${licenseNumber || 'N/A'}</div>
+            </div>
+            <div class="detail-group">
+              <span class="detail-label">Brand/Model:</span>
+              <div class="detail-value">
+                ${brand} ${model}
+              </div>
+            </div>
+            <div class="detail-group">
+              <span class="detail-label">Color:</span>
+              <div class="detail-value">${color || 'N/A'}</div>
+            </div>
+            <div class="detail-group">
+              <span class="detail-label">License Expiry:</span>
+              <div class="detail-value">
+                ${vehicleInfo.license_expiry ? this.formatDate(vehicleInfo.license_expiry.toDate(), true) : 'N/A'}
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        modalHTML += `
+          <div class="section-title">
+            <i class="fas fa-motorcycle"></i> Vehicle Information
+          </div>
+          <div class="user-detail-grid">
+            <div class="detail-group">
+              <span class="detail-label">Status:</span>
+              <div class="detail-value" style="color: #ff9800;">
+                <i class="fas fa-exclamation-triangle"></i> No vehicle information found
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      this.modalAccountName.textContent = account.displayName || account.username || "Account Details";
+      this.modalBody.innerHTML = modalHTML;
+
+      this.editAccountBtn.onclick = () => this.editAccount(account.id);
+      this.deleteAccountBtn.onclick = () => this.deleteAccount(account.id);
+
+      this.accountModal.style.display = "flex";
+
+    } catch (error) {
+      console.error("Error showing account details:", error);
+      this.showNotification("Failed to load account details", "error");
+    }
+  }
+
+  editAccount(accountId) {
+    const account = this.allAccounts.find(acc => acc.id === accountId);
+    if (!account) return;
+
+    alert(`Edit functionality for ${account.email}\n\nIn a real implementation, this would open an edit form.`);
+  }
+
+  async deleteAccount(accountId) {
+    if (!confirm("Are you sure you want to delete this account? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      this.showLoading();
+
+      await deleteDoc(doc(db, "users", accountId));
+
+      await this.deleteUserData(accountId, "personalInfo");
+      await this.deleteUserData(accountId, "motorInfo");
+
+      this.selectedAccounts.delete(accountId);
+
+      await this.loadAccounts();
+
+      this.accountModal.style.display = "none";
+
+      this.showNotification("Account deleted successfully", "success");
+
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      this.showNotification("Failed to delete account", "error");
+    }
+  }
+
+  async deleteSelectedAccounts() {
+    if (this.selectedAccounts.size === 0) {
+      this.showNotification("No accounts selected", "warning");
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete ${this.selectedAccounts.size} selected account(s)? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      this.showLoading();
+
+      for (const accountId of this.selectedAccounts) {
+        await deleteDoc(doc(db, "users", accountId));
+        await this.deleteUserData(accountId, "personalInfo");
+        await this.deleteUserData(accountId, "motorInfo");
+      }
+
+      this.selectedAccounts.clear();
+      this.selectAllHeader.checked = false;
+      this.selectAllBulk.checked = false;
+
+      await this.loadAccounts();
+
+      this.showNotification(`${this.selectedAccounts.size} account(s) deleted successfully`, "success");
+
+    } catch (error) {
+      console.error("Error deleting selected accounts:", error);
+      this.showNotification("Failed to delete accounts", "error");
+    }
+  }
+
+  async deleteUserData(userId, collectionName) {
+    try {
+      const queryRef = query(
+        collection(db, collectionName),
+        where("user_id", "==", userId)
+      );
+      const snapshot = await getDocs(queryRef);
+
+      const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deletePromises);
+
+    } catch (error) {
+      console.error(`Error deleting ${collectionName}:`, error);
+    }
+  }
+
+  exportSelectedAccounts() {
+    if (this.selectedAccounts.size === 0) {
+      this.showNotification("No accounts selected", "warning");
+      return;
+    }
+
+    const selectedData = this.allAccounts.filter(account =>
+      this.selectedAccounts.has(account.id)
+    ).map(account => ({
+      "Account ID": account.id,
+      "Student ID": account.studentId || "",
+      "Full Name": account.displayName || `${account.firstName} ${account.lastName}`.trim() || "",
+      "Email": account.email,
+      "Contact": account.personalInfo.contact_number || "",
+      "Course": account.personalInfo.course || "",
+      "Year Level": account.personalInfo.year_level || "",
+      "Section": account.personalInfo.section || "",
+      "Status": account.status,
+      "Created": this.formatDate(account.createdAt),
+      "Last Login": account.lastLogin ? this.formatDate(account.lastLogin) : "Never"
+    }));
+
+    const headers = Object.keys(selectedData[0]);
+    const csvRows = [
+      headers.join(","),
+      ...selectedData.map(row =>
+        headers.map(header => {
+          const cell = row[header] || "";
+          const escaped = ('' + cell).replace(/"/g, '""');
+          return `"${escaped}"`;
+        }).join(",")
+      )
+    ];
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `parkqueue_accounts_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    this.showNotification(`${this.selectedAccounts.size} account(s) exported successfully`, "success");
+  }
+
+  exportAllAccounts() {
+    if (this.allAccounts.length === 0) {
+      this.showNotification("No accounts to export", "warning");
+      return;
+    }
+
+    const allData = this.allAccounts.map(account => ({
+      "Account ID": account.id,
+      "Student ID": account.studentId || "",
+      "Full Name": account.displayName || `${account.firstName} ${account.lastName}`.trim() || "",
+      "Email": account.email,
+      "Status": account.status,
+      "Created": this.formatDate(account.createdAt),
+      "Last Login": account.lastLogin ? this.formatDate(account.lastLogin) : "Never"
+    }));
+
+    const headers = Object.keys(allData[0]);
+    const csvRows = [
+      headers.join(","),
+      ...allData.map(row =>
+        headers.map(header => {
+          const cell = row[header] || "";
+          const escaped = ('' + cell).replace(/"/g, '""');
+          return `"${escaped}"`;
+        }).join(",")
+      )
+    ];
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `parkqueue_all_accounts_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    this.showNotification("All accounts exported successfully", "success");
+  }
+
+  updateBulkActions() {
+    const selectedCount = this.selectedAccounts.size;
+    this.selectedCount.textContent = `${selectedCount} selected`;
+
+    this.deleteSelectedBtn.disabled = selectedCount === 0;
+    this.exportSelectedBtn.disabled = selectedCount === 0;
+
+    const allCheckboxes = document.querySelectorAll('.account-checkbox');
+    const allChecked = allCheckboxes.length > 0 &&
+      Array.from(allCheckboxes).every(cb => cb.checked);
+
+    this.selectAllHeader.checked = allChecked;
+    this.selectAllBulk.checked = allChecked;
+  }
+
+  updatePagination() {
+    const total = this.filteredAccounts.length;
+    const totalPages = Math.ceil(total / this.accountsPerPage);
+    const startIndex = (this.currentPage - 1) * this.accountsPerPage;
+    const endIndex = Math.min(startIndex + this.accountsPerPage, total);
+
+    this.currentCount.textContent = endIndex - startIndex;
+    this.totalCount.textContent = total;
+    this.currentPageElement.textContent = this.currentPage;
+    this.totalPages.textContent = totalPages;
+
+    this.prevPageBtn.disabled = this.currentPage <= 1;
+    this.nextPageBtn.disabled = this.currentPage >= totalPages;
+  }
+
+  formatDate(date, includeTime = false) {
+    if (!date) return "N/A";
+
+    const d = date instanceof Date ? date : date.toDate();
+
+    if (includeTime) {
+      return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    const dateStr = d.toLocaleDateString([], { month: 'numeric', day: 'numeric', year: '2-digit' });
+    const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return `${dateStr} ${time}`;
+  }
+
+  getStatusBadge(status) {
+    switch (status) {
+      case "active":
+        return '<span class="status-badge status-active">Active</span>';
+      case "pending":
+        return '<span class="status-badge status-pending">Pending</span>';
+      case "inactive":
+        return '<span class="status-badge status-inactive">Inactive</span>';
+      default:
+        return '<span class="status-badge status-inactive">Unknown</span>';
+    }
+  }
+
+  showLoading() {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+      loadingOverlay.style.display = 'flex';
+    }
+
+    this.accountsTableBody.innerHTML = `
+      <tr class="loading-row">
+        <td colspan="8">
+          <div class="loading-spinner-small"></div>
+          <span style="color: #666;">Loading accounts...</span>
+        </td>
+      </tr>
+    `;
+    this.bulkActions.style.display = "none";
+  }
+
+  hideLoading() {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+      loadingOverlay.style.display = 'none';
+    }
+  }
+
+  showError(message) {
+    this.accountsTableBody.innerHTML = `
+      <tr class="empty-state">
+        <td colspan="8">
+          <i class="fas fa-exclamation-triangle"></i>
+          <h3>Error Loading Accounts</h3>
+          <p>${message}</p>
+          <button onclick="window.location.reload()" 
+                  style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Retry
+          </button>
+        </td>
+      </tr>
+    `;
+    this.bulkActions.style.display = "none";
+    this.hideLoading();
+  }
+
+  showNotification(message, type = "info") {
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.style.cssText = `
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background: ${type === 'success' ? '#d4edda' : type === 'error' ? '#f8d7da' : '#d1ecf1'};
+      color: ${type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#0c5460'};
+      padding: 15px 25px;
+      border-radius: 10px;
+      border: 1px solid ${type === 'success' ? '#c3e6cb' : type === 'error' ? '#f5c6cb' : '#bee5eb'};
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.3s ease;
+    `;
+
+    let icon = 'info-circle';
+    if (type === 'success') icon = 'check-circle';
+    if (type === 'error') icon = 'exclamation-circle';
+    if (type === 'warning') icon = 'exclamation-triangle';
+
+    notification.innerHTML = `
+      <i class="fas fa-${icon}"></i>
+      <span>${message}</span>
+    `;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+      }
+    }, 5000);
+
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  async handleLogout() {
+    try {
+      await signOut(auth);
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = "../login/admin-login.html";
+    } catch (error) {
+      console.error("Logout error:", error);
+      this.showNotification("Logout failed. Please try again.", "error");
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  window.accountManager = new AccountManager();
+});
+</script>
+</body>
+
+</html>
