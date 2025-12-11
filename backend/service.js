@@ -1,6 +1,7 @@
 const express = require("express");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
+const path = require("path"); // ADD THIS LINE
 
 const app = express();
 
@@ -13,6 +14,40 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// ✅ ADD STATIC FILE SERVING FOR ADMIN FILES
+app.use(express.static(path.join(__dirname, "../frontend")));
+
+// ✅ ADMIN LANDING PAGE ROUTES
+app.get("/", (req, res) => {
+    console.log("📄 Serving admin login page as landing page...");
+    res.sendFile(path.join(__dirname, "../frontend/login/admin-login.html"));
+});
+
+app.get("/admin", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/login/admin-login.html"));
+});
+
+app.get("/login", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/login/admin-login.html"));
+});
+
+app.get("/dashboard", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/dashboard/dashboard.html"));
+});
+
+app.get("/pending", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pendingApproval/approvals.html"));
+});
+
+// Serve CSS and JS files properly
+app.get("/login/admin-login.css", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/login/admin-login.css"));
+});
+
+app.get("/login/admin-login.js", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/login/admin-login.js"));
+});
 
 // Email transporter setup
 const createTransporter = () => {
@@ -276,25 +311,6 @@ app.get("/health", (req, res) => {
     });
 });
 
-// Root endpoint
-app.get("/", (req, res) => {
-    res.send(`
-        <h1>ParkQueue Email Service</h1>
-        <p>Service is running on port ${PORT}</p>
-        <ul>
-            <li><a href="/health">Health Check</a></li>
-            <li><a href="/api/test-parking-email">Test Email</a></li>
-        </ul>
-        <h3>Available Endpoints:</h3>
-        <pre>
-POST /api/send-approval-email  (NEW - for student approvals)
-POST /api/send-parking-email   (for QR scan notifications)
-GET  /api/test-parking-email   (test endpoint)
-GET  /health                   (health check)
-        </pre>
-    `);
-});
-
 // 404 handler
 app.use((req, res) => {
     console.log(`404: ${req.method} ${req.url}`);
@@ -317,17 +333,17 @@ app.use((error, req, res, next) => {
 });
 
 // Start server
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`=================================`);
-    console.log(`📧 ParkQueue Email Server`);
+    console.log(`🏢 ADMIN SYSTEM + Email Service`);
     console.log(`=================================`);
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`📮 Email: kenightgallaza@gmail.com`);
-    console.log(`🌐 Local: http://localhost:${PORT}`);
-    console.log(`📤 POST to: http://localhost:${PORT}/api/send-approval-email`);
-    console.log(`📤 POST to: http://localhost:${PORT}/api/send-parking-email`);
-    console.log(`🧪 Test: http://localhost:${PORT}/api/test-parking-email`);
+    console.log(`🌐 Admin Login: http://localhost:${PORT}/`);
+    console.log(`🌐 Admin Dashboard: http://localhost:${PORT}/dashboard`);
+    console.log(`🌐 Pending Approvals: http://localhost:${PORT}/pending`);
+    console.log(`📤 Email API: http://localhost:${PORT}/api/send-approval-email`);
     console.log(`💚 Health: http://localhost:${PORT}/health`);
     console.log(`=================================`);
 });
