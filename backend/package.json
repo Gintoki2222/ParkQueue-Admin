@@ -1,0 +1,15 @@
+{
+  "name": "parkqueue-email-server",
+  "version": "1.0.0",
+  "main": "service.js",
+  "scripts": {
+    "start": "node service.js",
+    "dev": "nodemon service.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "nodemailer": "^6.9.4",
+    "cors": "^2.8.5",
+    "firebase-admin": "^11.8.0"
+  }
+}
