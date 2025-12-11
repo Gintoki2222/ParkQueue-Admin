@@ -2,6 +2,7 @@ const express = require("express");
 const nodemailer = require("nodemailer");
 const path = require("path");
 const cors = require("cors");
+const fs = require("fs");
 
 const app = express();
 
@@ -24,34 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 // ✅ SERVE ALL STATIC FILES FROM FRONTEND FOLDER
 app.use(express.static(path.join(__dirname, "../frontend")));
 
-// ✅ REDIRECT ROOT TO ADMIN LOGIN
-app.get("/", (req, res) => {
-    console.log("Redirecting to admin login...");
-    res.redirect("/login/admin-login.html");
-});
-
-// ✅ CATCH-ALL FOR HTML FILES
-app.get("/:page", (req, res, next) => {
-    const page = req.params.page;
-    
-    // If it's a known admin page without .html extension
-    const adminPages = {
-        "admin": "login/admin-login.html",
-        "login": "login/admin-login.html",
-        "dashboard": "dashboard/dashboard.html",
-        "pending": "pendingApproval/approvals.html"
-    };
-    
-    if (adminPages[page]) {
-        const filePath = path.join(__dirname, "../frontend", adminPages[page]);
-        console.log(`Serving admin page: ${adminPages[page]}`);
-        return res.sendFile(filePath);
-    }
-    
-    next(); // Let static middleware handle other files
-});
-
-// ✅ EMAIL FUNCTIONALITY (with fallback for Render)
+// ✅ EMAIL FUNCTIONALITY
 const createTransporter = () => {
     console.log("📧 Creating email transporter...");
     return nodemailer.createTransport({
@@ -76,20 +50,147 @@ try {
     transporter = createTransporter();
     console.log("✅ Email transporter created");
     
-    // Verify connection in background (don't block startup)
     transporter.verify(function(error, success) {
         if (error) {
-            console.error('❌ Email transporter verification failed (expected on Render):', error.message);
+            console.error('❌ Email transporter verification failed:', error.message);
         } else {
             console.log('✅ Email server is ready to take messages');
         }
     });
 } catch (error) {
-    console.error("❌ Failed to create email transporter (expected on Render):", error.message);
+    console.error("❌ Failed to create email transporter:", error.message);
     transporter = null;
 }
 
-// ✅ APPROVAL EMAIL ENDPOINT
+// ✅ ROUTES FOR ALL ADMIN PAGES
+
+// 1. ROOT & LOGIN PAGES
+app.get("/", (req, res) => {
+    res.redirect("/login");
+});
+
+app.get("/admin", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/login/admin-login.html"));
+});
+
+app.get("/login", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/login/admin-login.html"));
+});
+
+// 2. DASHBOARD
+app.get("/dashboard", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/dashboard/dashboard.html"));
+});
+
+// 3. PENDING APPROVALS
+app.get("/pending", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pendingApproval/approvals.html"));
+});
+
+// 4. PARKING HISTORY
+app.get("/parking-history", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/parking-history/parking-history.html"));
+});
+
+// 5. ACCOUNT MANAGEMENT
+app.get("/account-management", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/account-management/account-management.html"));
+});
+
+// 6. QR SCANNER
+app.get("/qrscanner", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/Orscanner/Orscanner.html"));
+});
+
+// ✅ SPECIFIC FILE ROUTES (for files that might be requested directly)
+
+// Firebase.js (important - it's in frontend root)
+app.get("/firebase.js", (req, res) => {
+    const filePath = path.join(__dirname, "../frontend/firebase.js");
+    if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+    } else {
+        res.status(404).send("firebase.js not found");
+    }
+});
+
+// Dashboard JS files
+app.get("/dashboard.js", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/dashboard/dashboard.js"));
+});
+
+app.get("/dashboard-charts.js", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/dashboard/dashboard-charts.js"));
+});
+
+app.get("/admin-logger.js", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/dashboard/admin-logger.js"));
+});
+
+// Login assets
+app.get("/admin-login.css", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/login/admin-login.css"));
+});
+
+app.get("/admin-login.js", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/login/admin-login.js"));
+});
+
+// Pending approvals assets
+app.get("/approvals.css", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pendingApproval/approvals.css"));
+});
+
+app.get("/approvals.js", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/pendingApproval/approvals.js"));
+});
+
+// Dashboard CSS
+app.get("/dashboard.css", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/dashboard/dashboard.css"));
+});
+
+// Images - serve from img folder
+app.get("/img/:filename", (req, res) => {
+    const filename = req.params.filename;
+    const imgPath = path.join(__dirname, "../frontend/img", filename);
+    
+    if (fs.existsSync(imgPath)) {
+        res.sendFile(imgPath);
+    } else {
+        // Try with .png extension if not found
+        const pngPath = path.join(__dirname, "../frontend/img", filename + '.png');
+        if (fs.existsSync(pngPath)) {
+            res.sendFile(pngPath);
+        } else {
+            res.status(404).send("Image not found");
+        }
+    }
+});
+
+// ✅ CATCH-ALL FOR OTHER FILES
+app.get("/:folder/:file", (req, res, next) => {
+    const folder = req.params.folder;
+    const file = req.params.file;
+    
+    // Only handle known folders
+    const allowedFolders = [
+        'login', 'dashboard', 'pendingApproval', 
+        'parking-history', 'account-management', 'Orscanner', 'img'
+    ];
+    
+    if (allowedFolders.includes(folder)) {
+        const filePath = path.join(__dirname, "../frontend", folder, file);
+        if (fs.existsSync(filePath)) {
+            console.log(`✅ Serving: ${folder}/${file}`);
+            return res.sendFile(filePath);
+        }
+    }
+    
+    next();
+});
+
+// ✅ EMAIL API ENDPOINTS
 app.post("/api/send-approval-email", async (req, res) => {
     console.log("📨 Approval Email API called");
     
@@ -107,10 +208,10 @@ app.post("/api/send-approval-email", async (req, res) => {
         
         // Check if email is available
         if (!transporter) {
-            console.log("ℹ️ Email service not available on Render - returning mock response");
+            console.log("ℹ️ Email service not available - returning mock response");
             return res.json({
                 success: true,
-                message: "Mock: Approval email would be sent (email disabled on Render)",
+                message: "Mock: Approval email would be sent",
                 mock: true,
                 data: {
                     to: studentEmail,
@@ -121,7 +222,6 @@ app.post("/api/send-approval-email", async (req, res) => {
             });
         }
         
-        // Actual email sending code (only works outside Render)
         let emailSubject = '';
         let emailMessage = '';
         
@@ -170,14 +270,13 @@ app.post("/api/send-approval-email", async (req, res) => {
         console.error("❌ Email sending failed:", error.message);
         res.json({
             success: false,
-            message: "Email sending failed (expected on Render)",
+            message: "Email sending failed",
             error: error.message,
             mock: true
         });
     }
 });
 
-// ✅ QR SCAN EMAIL ENDPOINT
 app.post("/api/send-parking-email", async (req, res) => {
     console.log("📨 Parking Email API called");
     
@@ -193,18 +292,15 @@ app.post("/api/send-parking-email", async (req, res) => {
         
         console.log(`📧 Would send parking email to: ${studentEmail}`);
         
-        // Check if email is available
         if (!transporter) {
-            console.log("ℹ️ Email service not available on Render - returning mock response");
             return res.json({
                 success: true,
-                message: "Mock: Parking email would be sent (email disabled on Render)",
+                message: "Mock: Parking email would be sent",
                 mock: true,
                 data: req.body
             });
         }
         
-        // Actual email sending code
         const mailOptions = {
             from: '"ParkQueue System" <kenightgallaza@gmail.com>',
             to: studentEmail,
@@ -236,14 +332,14 @@ app.post("/api/send-parking-email", async (req, res) => {
         console.error("❌ Email sending failed:", error.message);
         res.json({
             success: false,
-            message: "Email sending failed (expected on Render)",
+            message: "Email sending failed",
             error: error.message,
             mock: true
         });
     }
 });
 
-// ✅ TEST ENDPOINT
+// ✅ TEST & HEALTH ENDPOINTS
 app.get("/api/test-parking-email", async (req, res) => {
     try {
         console.log("🧪 Testing email service...");
@@ -251,7 +347,7 @@ app.get("/api/test-parking-email", async (req, res) => {
         if (!transporter) {
             return res.json({
                 success: true,
-                message: "Mock: Test email would be sent (email disabled on Render)",
+                message: "Mock: Test email would be sent",
                 mock: true,
                 timestamp: new Date().toISOString()
             });
@@ -280,22 +376,70 @@ app.get("/api/test-parking-email", async (req, res) => {
         console.error("❌ Test email failed:", error);
         res.json({
             success: false,
-            message: "Test email failed (expected on Render)",
+            message: "Test email failed",
             error: error.message,
             mock: true
         });
     }
 });
 
-// ✅ SIMPLE HEALTH CHECK
 app.get("/api/health", (req, res) => {
     res.json({
         status: "healthy",
         service: "ParkQueue Admin System",
         timestamp: new Date().toISOString(),
         emailAvailable: !!transporter,
-        note: transporter ? "Email service is ready" : "Email disabled (expected on Render)"
+        routes: [
+            "/ - Login page",
+            "/dashboard - Dashboard",
+            "/pending - Pending Approvals",
+            "/parking-history - Parking History",
+            "/account-management - Account Management",
+            "/qrscanner - QR Scanner"
+        ]
     });
+});
+
+// ✅ DEBUG ENDPOINT - List all files
+app.get("/api/debug-files", (req, res) => {
+    const frontendPath = path.join(__dirname, "../frontend");
+    
+    try {
+        const files = [];
+        
+        function scanDir(dir, prefix = "") {
+            const items = fs.readdirSync(dir);
+            
+            items.forEach(item => {
+                const fullPath = path.join(dir, item);
+                const stat = fs.statSync(fullPath);
+                const relativePath = path.relative(frontendPath, fullPath);
+                
+                if (stat.isDirectory()) {
+                    files.push(`📁 ${prefix}${item}/`);
+                    scanDir(fullPath, prefix + "  ");
+                } else {
+                    files.push(`📄 ${prefix}${item} (/${relativePath})`);
+                }
+            });
+        }
+        
+        scanDir(frontendPath);
+        
+        res.json({
+            success: true,
+            frontendPath: frontendPath,
+            totalFiles: files.length,
+            files: files
+        });
+        
+    } catch (error) {
+        res.json({
+            success: false,
+            error: error.message,
+            frontendPath: frontendPath
+        });
+    }
 });
 
 // 404 handler
@@ -306,7 +450,7 @@ app.use((req, res) => {
         message: 'Endpoint not found',
         requestedUrl: req.url,
         method: req.method,
-        hint: "Try visiting /login/admin-login.html directly"
+        hint: "Visit /api/health for available routes"
     });
 });
 
@@ -324,20 +468,21 @@ app.use((error, req, res, next) => {
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
     console.log(`=================================`);
-    console.log(`🏢 PARKQUEUE ADMIN SYSTEM`);
+    console.log(`🏢 PARKQUEUE ADMIN SYSTEM v2.0`);
     console.log(`=================================`);
     console.log(`✅ Server running on port ${PORT}`);
-    console.log(`🌐 Admin Login: https://parkqueue-admin-1.onrender.com/`);
-    console.log(`🌐 Direct link: https://parkqueue-admin-1.onrender.com/login/admin-login.html`);
-    console.log(`🌐 Dashboard: https://parkqueue-admin-1.onrender.com/dashboard`);
-    console.log(`🌐 Pending: https://parkqueue-admin-1.onrender.com/pending`);
-    console.log(`📤 Email API: https://parkqueue-admin-1.onrender.com/api/send-approval-email`);
-    console.log(`💚 Health: https://parkqueue-admin-1.onrender.com/api/health`);
-    console.log(`=================================`);
-    if (!transporter) {
-        console.log(`⚠️  NOTE: Email functionality is disabled on Render`);
-        console.log(`     Emails will return mock responses`);
-        console.log(`     For real emails, use different hosting or email service`);
-    }
+    console.log(`📁 Serving from: ${path.join(__dirname, "../frontend")}`);
+    console.log(`\n🌐 AVAILABLE ROUTES:`);
+    console.log(`   • Login: http://localhost:${PORT}/login`);
+    console.log(`   • Dashboard: http://localhost:${PORT}/dashboard`);
+    console.log(`   • Pending Approvals: http://localhost:${PORT}/pending`);
+    console.log(`   • Parking History: http://localhost:${PORT}/parking-history`);
+    console.log(`   • Account Management: http://localhost:${PORT}/account-management`);
+    console.log(`   • QR Scanner: http://localhost:${PORT}/qrscanner`);
+    console.log(`\n🔧 API ENDPOINTS:`);
+    console.log(`   • Health: http://localhost:${PORT}/api/health`);
+    console.log(`   • Debug Files: http://localhost:${PORT}/api/debug-files`);
+    console.log(`   • Email API: http://localhost:${PORT}/api/send-approval-email`);
+    console.log(`\n📧 Email Status: ${transporter ? '✅ Available' : '❌ Disabled (Render blocks SMTP)'}`);
     console.log(`=================================`);
 });
