@@ -13,19 +13,19 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Log all requests
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ✅ LOG ALL REQUESTS FOR DEBUGGING
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
     next();
 });
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// ✅ STATIC FILE SERVING - ALL FILES FROM FRONTEND FOLDER
+app.use(express.static(path.join(__dirname, "frontend")));
 
-// ✅ SERVE ALL STATIC FILES FROM FRONTEND FOLDER
-app.use(express.static(path.join(__dirname, "../frontend")));
-
-// ✅ EMAIL FUNCTIONALITY
+// ✅ EMAIL SETUP
 const createTransporter = () => {
     console.log("📧 Creating email transporter...");
     return nodemailer.createTransport({
@@ -43,123 +43,98 @@ const createTransporter = () => {
     });
 };
 
-let transporter;
+let transporter = createTransporter();
 
-// Initialize transporter with error handling
-try {
-    transporter = createTransporter();
-    console.log("✅ Email transporter created");
-    
-    transporter.verify(function(error, success) {
-        if (error) {
-            console.error('❌ Email transporter verification failed:', error.message);
-        } else {
-            console.log('✅ Email server is ready to take messages');
-        }
-    });
-} catch (error) {
-    console.error("❌ Failed to create email transporter:", error.message);
-    transporter = null;
-}
+// ✅ MAIN ROUTES
 
-// ✅ ROUTES FOR ALL ADMIN PAGES
-
-// 1. ROOT & LOGIN PAGES
+// Root -> Admin Login
 app.get("/", (req, res) => {
-    res.redirect("/login");
+    res.sendFile(path.join(__dirname, "frontend/login/admin-login.html"));
 });
 
-app.get("/admin", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/login/admin-login.html"));
-});
-
+// Login page
 app.get("/login", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/login/admin-login.html"));
+    res.sendFile(path.join(__dirname, "frontend/login/admin-login.html"));
 });
 
-// 2. DASHBOARD
+// Dashboard
 app.get("/dashboard", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/dashboard/dashboard.html"));
+    res.sendFile(path.join(__dirname, "frontend/dashboard/dashboard.html"));
 });
 
-// 3. PENDING APPROVALS
+// Pending Approvals
 app.get("/pending", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pendingApproval/approvals.html"));
+    res.sendFile(path.join(__dirname, "frontend/pendingApproval/approvals.html"));
 });
 
-// 4. PARKING HISTORY
+// Parking History
 app.get("/parking-history", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/parking-history/parking-history.html"));
+    res.sendFile(path.join(__dirname, "frontend/parking-history/parking-history.html"));
 });
 
-// 5. ACCOUNT MANAGEMENT
+// Account Management
 app.get("/account-management", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/account-management/account-management.html"));
+    res.sendFile(path.join(__dirname, "frontend/account-management/account-management.html"));
 });
 
-// 6. QR SCANNER
+// QR Scanner
 app.get("/qrscanner", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/Orscanner/Orscanner.html"));
+    res.sendFile(path.join(__dirname, "frontend/Qrscanner/Qrscanner.html"));
 });
 
-// ✅ SPECIFIC FILE ROUTES (for files that might be requested directly)
+// ✅ SPECIFIC FILE ROUTES (for files that might need explicit routing)
 
-// Firebase.js (important - it's in frontend root)
-app.get("/firebase.js", (req, res) => {
-    const filePath = path.join(__dirname, "../frontend/firebase.js");
-    if (fs.existsSync(filePath)) {
-        res.sendFile(filePath);
-    } else {
-        res.status(404).send("firebase.js not found");
-    }
-});
-
-// Dashboard JS files
+// Dashboard JavaScript files
 app.get("/dashboard.js", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/dashboard/dashboard.js"));
+    res.sendFile(path.join(__dirname, "frontend/dashboard/dashboard.js"));
 });
 
 app.get("/dashboard-charts.js", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/dashboard/dashboard-charts.js"));
+    res.sendFile(path.join(__dirname, "frontend/dashboard/dashboard-charts.js"));
 });
 
 app.get("/admin-logger.js", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/dashboard/admin-logger.js"));
+    res.sendFile(path.join(__dirname, "frontend/dashboard/admin-logger.js"));
 });
 
 // Login assets
 app.get("/admin-login.css", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/login/admin-login.css"));
+    res.sendFile(path.join(__dirname, "frontend/login/admin-login.css"));
 });
 
 app.get("/admin-login.js", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/login/admin-login.js"));
-});
-
-// Pending approvals assets
-app.get("/approvals.css", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pendingApproval/approvals.css"));
-});
-
-app.get("/approvals.js", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/pendingApproval/approvals.js"));
+    res.sendFile(path.join(__dirname, "frontend/login/admin-login.js"));
 });
 
 // Dashboard CSS
 app.get("/dashboard.css", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/dashboard/dashboard.css"));
+    res.sendFile(path.join(__dirname, "frontend/dashboard/dashboard.css"));
+});
+
+// Pending Approvals assets
+app.get("/approvals.css", (req, res) => {
+    res.sendFile(path.join(__dirname, "frontend/pendingApproval/approvals.css"));
+});
+
+app.get("/approvals.js", (req, res) => {
+    res.sendFile(path.join(__dirname, "frontend/pendingApproval/approvals.js"));
+});
+
+// Firebase.js (important - it's in frontend root)
+app.get("/firebase.js", (req, res) => {
+    res.sendFile(path.join(__dirname, "frontend/firebase.js"));
 });
 
 // Images - serve from img folder
 app.get("/img/:filename", (req, res) => {
     const filename = req.params.filename;
-    const imgPath = path.join(__dirname, "../frontend/img", filename);
+    const imgPath = path.join(__dirname, "frontend/img", filename);
     
     if (fs.existsSync(imgPath)) {
         res.sendFile(imgPath);
     } else {
         // Try with .png extension if not found
-        const pngPath = path.join(__dirname, "../frontend/img", filename + '.png');
+        const pngPath = path.join(__dirname, "frontend/img", filename + '.png');
         if (fs.existsSync(pngPath)) {
             res.sendFile(pngPath);
         } else {
@@ -168,7 +143,7 @@ app.get("/img/:filename", (req, res) => {
     }
 });
 
-// ✅ CATCH-ALL FOR OTHER FILES
+// ✅ CATCH-ALL FOR OTHER FILES IN SUBFOLDERS
 app.get("/:folder/:file", (req, res, next) => {
     const folder = req.params.folder;
     const file = req.params.file;
@@ -176,11 +151,11 @@ app.get("/:folder/:file", (req, res, next) => {
     // Only handle known folders
     const allowedFolders = [
         'login', 'dashboard', 'pendingApproval', 
-        'parking-history', 'account-management', 'Orscanner', 'img'
+        'parking-history', 'account-management', 'Qrscanner', 'img'
     ];
     
     if (allowedFolders.includes(folder)) {
-        const filePath = path.join(__dirname, "../frontend", folder, file);
+        const filePath = path.join(__dirname, "frontend", folder, file);
         if (fs.existsSync(filePath)) {
             console.log(`✅ Serving: ${folder}/${file}`);
             return res.sendFile(filePath);
@@ -190,7 +165,7 @@ app.get("/:folder/:file", (req, res, next) => {
     next();
 });
 
-// ✅ EMAIL API ENDPOINTS
+// ✅ EMAIL API ENDPOINTS (copy from your original service.js)
 app.post("/api/send-approval-email", async (req, res) => {
     console.log("📨 Approval Email API called");
     
@@ -402,7 +377,7 @@ app.get("/api/health", (req, res) => {
 
 // ✅ DEBUG ENDPOINT - List all files
 app.get("/api/debug-files", (req, res) => {
-    const frontendPath = path.join(__dirname, "../frontend");
+    const frontendPath = path.join(__dirname, "frontend");
     
     try {
         const files = [];
@@ -442,6 +417,40 @@ app.get("/api/debug-files", (req, res) => {
     }
 });
 
+// ✅ DEBUG: Check specific file paths
+app.get("/api/debug-paths", (req, res) => {
+    const basePath = __dirname;
+    const frontendPath = path.join(__dirname, "frontend");
+    
+    const checkFiles = [
+        "frontend/login/admin-login.html",
+        "frontend/dashboard/dashboard.html",
+        "frontend/firebase.js",
+        "frontend/dashboard/dashboard.js",
+        "frontend/login/admin-login.css",
+        "frontend/login/admin-login.js",
+        "frontend/dashboard/dashboard.css",
+        "frontend/pendingApproval/approvals.css",
+        "frontend/img/logow.png"
+    ];
+    
+    const results = checkFiles.map(file => {
+        const fullPath = path.join(__dirname, file);
+        return {
+            file: file,
+            exists: fs.existsSync(fullPath),
+            path: fullPath
+        };
+    });
+    
+    res.json({
+        project: "Admin System",
+        baseDir: basePath,
+        frontendDir: frontendPath,
+        files: results
+    });
+});
+
 // 404 handler
 app.use((req, res) => {
     console.log(`404: ${req.method} ${req.url}`);
@@ -471,9 +480,9 @@ app.listen(PORT, () => {
     console.log(`🏢 PARKQUEUE ADMIN SYSTEM v2.0`);
     console.log(`=================================`);
     console.log(`✅ Server running on port ${PORT}`);
-    console.log(`📁 Serving from: ${path.join(__dirname, "../frontend")}`);
+    console.log(`📁 Serving from: ${path.join(__dirname, "frontend")}`);
     console.log(`\n🌐 AVAILABLE ROUTES:`);
-    console.log(`   • Login: http://localhost:${PORT}/login`);
+    console.log(`   • Login: http://localhost:${PORT}/`);
     console.log(`   • Dashboard: http://localhost:${PORT}/dashboard`);
     console.log(`   • Pending Approvals: http://localhost:${PORT}/pending`);
     console.log(`   • Parking History: http://localhost:${PORT}/parking-history`);
@@ -482,7 +491,8 @@ app.listen(PORT, () => {
     console.log(`\n🔧 API ENDPOINTS:`);
     console.log(`   • Health: http://localhost:${PORT}/api/health`);
     console.log(`   • Debug Files: http://localhost:${PORT}/api/debug-files`);
+    console.log(`   • Debug Paths: http://localhost:${PORT}/api/debug-paths`);
     console.log(`   • Email API: http://localhost:${PORT}/api/send-approval-email`);
-    console.log(`\n📧 Email Status: ${transporter ? '✅ Available' : '❌ Disabled (Render blocks SMTP)'}`);
+    console.log(`\n📧 Email Status: ${transporter ? '✅ Available' : '❌ Disabled'}`);
     console.log(`=================================`);
 });
